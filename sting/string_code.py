@@ -95,8 +95,8 @@ def on_key_press(symbol, modifiers):
         y = y+5
     except:
         y=100
-    rope.Implement_Follow_The_Leader(0, [5, y,0])
-    rope.Implement_Follow_The_Leader(99, [990, y,0])
+    rope.Implement_Follow_The_Leader(50, [400, y,0])
+    # rope.Implement_Follow_The_Leader(70, [700, y,0])
     # print(y)
     # print(rope.lace)
     if count == 10:
