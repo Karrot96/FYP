@@ -115,7 +115,7 @@ def videoInput():  # Used to handle argument parsing, picks the correct input so
         fromVideo(cv2.VideoCapture(args.video))
     else:
         print("Selecting Camera {0}".format("0"))
-         fromCamera(cv2.VideoCapture(0))
+        fromCamera(cv2.VideoCapture(0))
 
 
 def main():
