@@ -18,7 +18,7 @@ def nearestneighbours(plot,points):
     return indexes1, indexes2
 
 rope = Rope()
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 def get_mid(a):
     if np.count_nonzero(a) >0:
         return int(round(np.mean(np.nonzero(a))))
@@ -29,7 +29,9 @@ while(True):
     ret, frame = cap.read()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray,50,60)
+
     cv2.imshow('frame',edges)
+
     lace = np.apply_along_axis(get_mid, 0, edges)
     shoelace = np.nonzero(lace)
     jump = int(np.count_nonzero(shoelace)/rope.NO_NODES)

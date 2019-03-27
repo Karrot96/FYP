@@ -50,6 +50,14 @@ class Rope:
             self.lace[currentNode] = self.Follow_The_Leader(self.lace[currentNode],self.lace[node])
             node = currentNode
 
+    #nodes in form np.array([[[NodeID],[x,y,z]], [[NodeID],[x,y,z]]])
+    def forced_nodes(nodes):
+        np.sort(nodes, axis=0)
+        if len(nodes) ==1:
+            Implement_Follow_The_Leader(nodes[0][0][0], nodes[0][1])
+        elif len(nodes) >= 1:
+
+
 rope = Rope()
 
 window = pyglet.window.Window(1000,1000)
