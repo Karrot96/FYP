@@ -3,6 +3,7 @@ import cv2
 import Rope
 from scipy import spatial
 from sklearn.cluster import KMeans
+from Engines.pathfinding import Paths
 import logging as log
 import sys
 np.set_printoptions(threshold=sys.maxsize)
@@ -121,9 +122,13 @@ class Engine:
         combinedX = np.apply_along_axis(self.locateX, 1, np.transpose(shoelace))
         combined = np.concatenate((combinedX,combinedY))
         clusters = self.kmeans(combined[0::20])
-        for i in range(0,self.rope.NO_NODES):
-            potential = self.nearestneighbours(clusters,(self.rope.lace[i][0],self.rope.lace[i][1]),1)
-            log.debug("potential: %s", potential[0])
-            self.rope.lace[i] = np.array([int(clusters[potential[0]][0]),int(clusters[potential[0]][1]),self.rope.lace[i][2]])
-            clusters=np.delete(clusters,potential[0],0)
+        log.debug(np.shape(clusters))
+        path = Paths(clusters)
+        x,y = path.iterate()
+        log.debug("x: %s", x)
+        log.debug("y: %s", y)
+        for i in range(0,len(self.rope.lace)):
+            self.rope.lace[i]= np.array([int(x[i]),int(y[i]),self.rope.lace[i][2]])
+            # np.array([int(clusters[potential[0]][0]),int(clusters[potential[0]][1]),self.rope.lace[i][2]])
+        log.debug("rope: %s",self.rope.lace)
         return self.rope
