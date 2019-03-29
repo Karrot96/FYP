@@ -4,7 +4,7 @@ import Rope
 from scipy import spatial
 import logging as log
 import sys
-from Engines.Engine1 import Engine
+from Engines.KmeansNNSearch import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 class Video:
@@ -54,7 +54,7 @@ class Video:
             log.info("Engine Finished")
 
 
-            frame = self.rope.draw_point(frame)
+            frame = self.rope.draw_lace(frame)
             # cv2.imshow('edges', edges)
             # cv2.imshow('frame', frame)
             if self.out:

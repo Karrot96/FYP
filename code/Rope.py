@@ -6,8 +6,12 @@ np.set_printoptions(threshold=sys.maxsize)
 
 class Rope:
     """Rope object to store actual data nd physics model of the shoelace
+    Variables:
+        NO_NODES  {int} -- No. of nodes in the rope
+        lace {np.array} -- location of all the nodes in 3-D space
+        DISTANCE_BETWEEN_NODES {int} -- Distance between nodes in pixels
     """
-    NO_NODES = 100
+    NO_NODES = 10
     # lace is shape (x,y,z)
     lace = np.zeros((NO_NODES,3))
     DISTANCE_BETWEEN_NODES = 10
@@ -17,7 +21,7 @@ class Rope:
 
         log.info("Initialising rope")
         for i in range(0,len(self.lace)):
-            self.lace[i] = np.array([i, i ,-1])
+            self.lace[i] = np.array([1, 1 ,-1])
         log.debug("Finsihed rope initialisation")
 
     def draw_point(self, frame):
