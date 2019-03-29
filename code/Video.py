@@ -155,13 +155,14 @@ class Video:
                 for k in range(1,self.rope.NO_NODES+1): #check each node isnt conflicting with another
                     log.debug("node: %s", i)
                     potentials = self.nearestneighbours(combinedReduced, (self.rope.lace[i][0],self.rope.lace[i][1]), k) #Find nearest matches to the point on camera from string model
-                    if map[potentials[0]] == 0:
-                        map[potentials[0]] = 1
-                        self.rope.lace[i] = np.array([int(combinedReduced[potentials[0]][0]),int(combinedReduced[potentials[0]][1]),self.rope.lace[i][2]])
-                        log.debug("potentials: %s", potentials)
-                        log.debug("x,y: %s, %s", int(combinedReduced[potentials[0]][0]),int(combinedReduced[potentials[0]][1]))
-                        log.debug("Moved: %s", k)
-                        break
+                    if np.linalg.norm(self.rope.lace[i]-np.array([int(combinedReduced[potentials[0]][0]),int(combinedReduced[potentials[0]][1]),self.rope.lace[i][2]]))>self.MOVECONST:
+                        if map[potentials[0]] == 0:
+                            map[potentials[0]] = 1
+                            self.rope.lace[i] = np.array([int(combinedReduced[potentials[0]][0]),int(combinedReduced[potentials[0]][1]),self.rope.lace[i][2]])
+                            log.debug("potentials: %s", potentials)
+                            log.debug("x,y: %s, %s", int(combinedReduced[potentials[0]][0]),int(combinedReduced[potentials[0]][1]))
+                            log.debug("Moved: %s", k)
+                            break
                     log.debug("Conflict: %s", k)
                     self.rope.lace[i] = np.array([int(combinedReduced[potentials[0]][0]),int(combinedReduced[potentials[0]][1]),self.rope.lace[i][2]])
             frame = self.rope.draw_point(frame)
