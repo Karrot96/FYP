@@ -17,7 +17,7 @@ def fromVideo(cap, out=None):
     start = time.perf_counter()
     while(video.cap.isOpened):
         log.info("frame: %s", frame)
-        video.shoelaceFinding()
+        video.shoelaceFinding(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         frame +=1
@@ -28,10 +28,12 @@ def fromVideo(cap, out=None):
 
 def fromCamera(cap, out=None):
     video = Video.Video(cap, out)
+    frame=0
     while(True):
-        video.shoelaceFinding()
+        video.shoelaceFinding(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        frame +=1
     cap.release()
     cv2.destroyAllWindows()
 

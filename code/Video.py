@@ -17,7 +17,7 @@ class Video:
 
     def __init__(self, cap, out):
         """Used to initialise the Video Class
-        
+
         Arguments:
             cap {cv2.VideoCapture} -- [The video stream from the file or camera]
             out {string} -- [Output file for the video if being outputted]
@@ -30,8 +30,7 @@ class Video:
         log.debug("Finished Video Initialisation")
 
 
-    
-    def shoelaceFinding(self):
+    def shoelaceFinding(self,frameNo):
         """Find the location of the shoelace
 
         Arguments:
@@ -40,27 +39,27 @@ class Video:
         try:
             ret, frame = self.cap.read()
             width = frame.shape[0]
-            log.debug("width: %s", width)
-            log.debug("image resolution is: %s", frame.shape)
+            log.debug("Frame :%s, width: %s",frameNo, width)
+            log.debug("Frame :%s, image resolution is: %s",frameNo, frame.shape)
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             lower_yellow = np.array([220,220,220])
             upper_yellow = np.array([255,255,255])
             mask = cv2.inRange(frame, lower_yellow, upper_yellow)
             edges = cv2.Canny(mask, 50,60)
-
+            log.debug("Frame :%s, Edges \n: %s", frameNo, edges)
             ##Engines
             log.info("Starting Engine Run")
             self.rope = self.engine.run(edges)
             log.info("Engine Finished")
 
 
-            frame = self.rope.draw_lace(frame)
+            frame = self.rope.draw_point(frame)
             # cv2.imshow('edges', edges)
             # cv2.imshow('frame', frame)
             if self.out:
                 self.out.write(frame)
                 log.info("Writing Frame")
-            log.debug("Rope positions, %s", self.rope.lace)
+            log.debug("Frame :%s, Rope positions, %s",frameNo, self.rope.lace)
         except Exception as e:
             log.error("Exception occurred", exc_info=True)
             exit()

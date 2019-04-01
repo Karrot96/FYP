@@ -17,12 +17,12 @@ class Engine:
 
     def nearestneighbours(self,plot,points,k):
         """Find the nearest point to another from a point map
-        
+
         Arguments:
             plot {2-D np.array} -- A collection of 2-D locations of all the points
             points {tuple} -- (x,y) of the point to be found within the plot
             k {int} -- The number of the closest point to be returned
-        
+
         Returns:
             int -- index of the closest point within plot
         """
@@ -33,10 +33,10 @@ class Engine:
 
     def adjusted_mean(self,a):
         """Checks to make sure points are close enough together to be considered parts of a string
-        
+
         Arguments:
             a {np.array} -- [2 points in an array to have mean found of]
-        
+
         Returns:
             [float] -- [The mean of 2 points]
         """
@@ -48,10 +48,10 @@ class Engine:
 
     def get_points(self,a):
         """Returns the points of the shoelace by looking for edges
-        
+
         Arguments:
             a {np.array} -- 1-D array of all points on a given pixel line
-        
+
         Returns:
             np.array -- all non-zero points on a line
         """
@@ -69,7 +69,7 @@ class Engine:
             plot {2-D np.array} -- A collection of 2-D locations of all the points
             points {tuple} -- (x,y) of the point to be found within the plot
             k {int} -- The number of the closest point to be returned
-        
+
         Returns:
             int -- index of the closest point within plot
         """
@@ -77,15 +77,15 @@ class Engine:
         locations = KMeans(n_clusters=self.rope.NO_NODES, init='k-means++').fit(plot).cluster_centers_
         log.debug("Locations are: \n %s",locations)
         return locations
-        
+
 
 
     def locateY(self, a):
         """Find the y value associated with nonzero value a
-        
+
         Arguments:
             a {np.array} -- [x y] of the index of the needed y value within self.lace
-        
+
         Returns:
             [tuple] -- (x,y) of the location within frame of the point
         """
@@ -94,10 +94,10 @@ class Engine:
         return (a[1],y)
     def locateX(self, a):
         """Find the x value associated with nonzero value a
-        
+
         Arguments:
             a {np.array} -- [x y] of the index of the needed x value within self.lace
-        
+
         Returns:
             [tuple] -- (x,y) of the location within frame of the point
         """
@@ -106,10 +106,10 @@ class Engine:
 
     def run(self, edges):
         """ Used to run the processing on images
-        
+
         Arguments:
             edges {np.array} -- Image in a greyscale format
-        
+
         Returns:
             Rope -- full upadated rope obkect
         """
@@ -122,6 +122,7 @@ class Engine:
         combinedX = np.apply_along_axis(self.locateX, 1, np.transpose(shoelace))
         combined = np.concatenate((combinedX,combinedY))
         clusters = self.kmeans(combined[0::20])
+        log.debug("clusters: \n %s", clusters)
         log.debug(np.shape(clusters))
         path = Paths(clusters)
         x,y = path.iterate()

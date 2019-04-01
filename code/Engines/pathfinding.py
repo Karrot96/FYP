@@ -20,6 +20,8 @@ class Paths:
         """
         self.points = points
 
+
+    # ! work out wasted processing
     def reorder(self, pointsRemaining, start, new, first):
         """ Reorders the array to that of the shortest distanace between points given a certain starting point
         

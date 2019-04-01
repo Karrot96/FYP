@@ -19,7 +19,7 @@ class Rope:
         """Rope object to store actual data nd physics model of the shoelace
         """
 
-        log.info("Initialising rope")
+        log.debug("Initialising rope")
         for i in range(0,len(self.lace)):
             self.lace[i] = np.array([1, 1 ,-1])
         log.debug("Finsihed rope initialisation")
