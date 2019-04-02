@@ -24,13 +24,13 @@ class Paths:
     # ! work out wasted processing
     def reorder(self, pointsRemaining, start, new, first):
         """ Reorders the array to that of the shortest distanace between points given a certain starting point
-        
+
         Arguments:
             pointsRemaining {2-D array} -- Array of the points yet to be sorted
             start {1-D array of shape (2)} -- Starting point for the sort
             new {None} -- Used in the recursion
             first {Bool} -- Used to determine if on first level of recursion
-        
+
         Returns:
             int -- always 0
         """
@@ -70,6 +70,7 @@ class Paths:
             self.points = np.roll(self.points,1)
         x=[]
         y=[]
+        log.debug("Path points: \n %s", self.points)
         for i in range(0,len(self.points)):
             x.append(self.best[i,0][0])
             y.append(self.best[i,0][1])
