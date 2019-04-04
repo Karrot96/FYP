@@ -4,7 +4,7 @@ import Rope
 from scipy import spatial
 import logging as log
 import sys
-from Engines.KmeansConnectDots import Engine
+from Engines.KmeansAstar import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 class Video:
