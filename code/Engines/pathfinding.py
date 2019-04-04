@@ -6,27 +6,27 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 ### TODO: TEST THIS
-class Node:
-    def __init__(self, parent=None,current, children ,distance=None):
-        self.parent = parent
-        self.current = current
-        self.children = children
-        self.distanace= distance
-    def newDistances(self):
-        self.distances=np.linalg.norm(np.delete(self.children,0,1)-current, axis=1)
+# class Node:
+#     def __init__(self, parent=None,current, children ,distance=None):
+#         self.parent = parent
+#         self.current = current
+#         self.children = children
+#         self.distanace= distance
+#     def newDistances(self):
+#         self.distances=np.linalg.norm(np.delete(self.children,0,1)-current, axis=1)
 
-    def best(self):
-        bestDistance = np.inf
-        current = 0
-        while len(self.children)>current:
-            x=Node(self.current,self.children[current][0],np.delete(self.children,current,0), self.distanace+self.distances[current])
-            if x.distanace<bestDistance:
-                self.bestChild = x
-            current +=1
-        if(len(self.bestChild.children))>0:
-            return self.bestChild.best()
-        else:
-            return self.bestChild.distanace
+#     def best(self):
+#         bestDistance = np.inf
+#         current = 0
+#         while len(self.children)>current:
+#             x=Node(self.current,self.children[current][0],np.delete(self.children,current,0), self.distanace+self.distances[current])
+#             if x.distanace<bestDistance:
+#                 self.bestChild = x
+#             current +=1
+#         if(len(self.bestChild.children))>0:
+#             return self.bestChild.best()
+#         else:
+#             return self.bestChild.distanace
 
 
 class ShortestPaths:
@@ -63,7 +63,7 @@ class Paths:
             points {2-D numpy array} - list of points to be connected
         """
         self.points = points
-
+        log.debug("Points in path: \n %s", self.points)
 
     # ! work out wasted processing
     def reorder(self, pointsRemaining, start, new, first):
@@ -111,7 +111,7 @@ class Paths:
 
         for i in range(0,len(self.points)):
             self.reorder(self.points, self.points[0],None, True)
-            self.points = np.roll(self.points,1)
+            self.points = np.roll(self.points,1,axis=0)
         x=[]
         y=[]
         log.debug("Path points: \n %s", self.points)
