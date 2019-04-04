@@ -4,6 +4,50 @@ import logging as log
 np.set_printoptions(threshold=sys.maxsize)
 
 
+
+### TODO: TEST THIS
+class Node:
+    def __init__(self, parent=None,current, children ,distance=None):
+        self.parent = parent
+        self.current = current
+        self.children = children
+        self.distanace= distance
+    def newDistances(self):
+        self.distances=np.linalg.norm(np.delete(self.children,0,1)-current, axis=1)
+
+    def best(self):
+        bestDistance = np.inf
+        current = 0
+        while len(self.children)>current:
+            x=Node(self.current,self.children[current][0],np.delete(self.children,current,0), self.distanace+self.distances[current])
+            if x.distanace<bestDistance:
+                self.bestChild = x
+            current +=1
+        if(len(self.bestChild.children))>0:
+            return self.bestChild.best()
+        else:
+            return self.bestChild.distanace
+
+
+class ShortestPaths:
+    """Used to hande the finding of the shortest path to connectg a set of points - definitely not efficient
+    
+        Variabels:
+            points {2-D numpy array} - list of points to be connected
+    """
+    totalDistance=-1
+    best = None
+    def __init__(self, points):
+        """Used to hande the finding of the shortest path to connectg a set of points - definitely not efficient
+    
+        Variabels:
+            points {2-D numpy array} - list of points to be connected
+        """
+        self.points = np.insert(points,0,np.arange(len(points)),axis=1)
+
+    
+
+
 class Paths:
     """Used to hande the finding of the shortest path to connectg a set of points - definitely not efficient
     
