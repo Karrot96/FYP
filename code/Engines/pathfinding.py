@@ -27,9 +27,13 @@ class LacePaths:
         """
 
         self.end=point
+        log.debug("Self.end: %s", self.end)
         self.toSearch = toSearch
+        log.debug("Self.toSearch: %s", self.toSearch)
         self.path = path
-        self.distanace = distance
+        log.debug("Self.path: %s", self.path)
+        self.distance = distance
+        log.debug("Self.distance: %s", self.distance)
     def nextSearch(self,i):
         """ Gets the new to search groups and removes the point from current search space
         
@@ -41,7 +45,8 @@ class LacePaths:
             np.array -- tosearch array
         """
         self.toSearch=np.delete(self.toSearch,i,0)
-        return np.delete(self.toSearch,i,0)
+        # log.info("ToSearch: %s", self.toSearch)
+        return self.toSearch
     def finished(self, nodes):
         """ Works out if a complete path has been found
         
@@ -51,7 +56,7 @@ class LacePaths:
         Returns:
             Bool -- Has the search been completed
         """
-
+        # log.info(self.path)
         if len(self.path)==nodes:
             return True
         else:
@@ -82,8 +87,9 @@ class BottomUp:
         """
 
         self.points = points
-        for i in points:
-            self.laces.append(LacePaths(i,np.delete(points,i,0),[i])) # Current point at end of string, points to search, string
+        for i in range(len(self.points)):
+            self.laces.append(LacePaths(self.points[i],np.delete(self.points,i,0),[self.points[i]])) # Current point at end of string, points to search, string
+        log.debug("Finished Init")
 
     def distance(self, start, points, index):
         """ Find the shortest distance to add from a search space
@@ -108,12 +114,16 @@ class BottomUp:
         """
 
         nextIndex, minDistance, pointIndex = self.next() #Find next best point by working out total distance looked at
+        point = self.laces[nextIndex].toSearch[pointIndex]
         newSearch = self.laces[nextIndex].nextSearch(pointIndex)
+        path = self.laces[nextIndex].path
+        path.append(np.array(point))
+        log.debug("Path: %s", path)
         self.laces.append(
             LacePaths(
-                self.laces[nextIndex].toSearch[pointIndex], #New point
+                point, #New point
                 newSearch,  #updated search space
-                self.laces[nextIndex].path.append(self.laces[nextIndex].toSearch[pointIndex]), # updated lace
+                path, # updated lace
                 distance=minDistance # Min distance
             )
         )
@@ -140,6 +150,7 @@ class BottomUp:
 
         currMin = np.inf
         for i in range(len(self.laces)):
+            log.debug("next Searching: %s", self.laces[i].toSearch)
             tmpNext,tmpMin=self.distance(self.laces[i].end,self.laces[i].toSearch,i)
             if tmpMin<currMin:
                 currMin = tmpMin
@@ -165,10 +176,13 @@ class BottomUp:
         Returns:
             (list,list) -- tuple of x,y listss
         """
-
+        count=0
         finished = False
         while not finished:
-            self.expandSearch()
+            finished=self.expandSearch()
+            count+=1
+            log.debug("Count: %s",count)
+        log.info("Count: %s",count)
         return self.getBest()
         
 

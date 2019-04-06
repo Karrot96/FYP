@@ -15,7 +15,7 @@ def fromVideo(cap, out=None):
         out = cv2.VideoWriter(out,cv2.VideoWriter_fourcc('D','I','V','X'), 10, (int(cap.get(3)),int(cap.get(4))))
     video = Video.Video(cap, out)
     start = time.perf_counter()
-    while(video.cap.isOpened and frame<20):
+    while(video.cap.isOpened):
         log.info("frame: %s", frame)
         video.shoelaceFinding(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -50,7 +50,7 @@ def videoInput():  # Used to handle argument parsing, picks the correct input so
             log.basicConfig(level=log.DEBUG, format='%(asctime)s, %(levelname)s , %(message)s')
             log.debug("Debug turned on. Outputting to console")
         elif args.debug:
-            log.basicConfig(level=log.DEBUG, filename=args.debug, filemode='w', format='%(asctime)s, %(levelname)s , %(message)s')
+            log.basicConfig(level=log.INFO, filename=args.debug, filemode='w', format='%(asctime)s, %(levelname)s , %(message)s')
             log.debug("Debug turned on. Outputting to {}".format(args.debug))
         else:
             log.basicConfig(level=log.INFO, format='%(asctime)s, %(levelname)s , %(message)s')

@@ -53,7 +53,7 @@ class Video:
             log.info("Engine Finished")
 
 
-            frame = self.rope.draw_point(frame)
+            frame = self.rope.draw_lace(frame)
             # cv2.imshow('edges', edges)
             # cv2.imshow('frame', frame)
             if self.out:
