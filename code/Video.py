@@ -4,7 +4,7 @@ import Rope
 from scipy import spatial
 import logging as log
 import sys
-from Engines.KmeansConnectDots import Engine
+from Engines.KmeansConnectDotsWithMask import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 class Video:
@@ -50,7 +50,7 @@ class Video:
             log.debug("Frame :%s, Edges \n: %s", frameNo, edges)
             ##Engines
             log.info("Starting Engine Run")
-            self.rope = self.engine.run(edges)
+            self.rope = self.engine.run(edges, mask)
             log.info("Engine Finished")
 
 
