@@ -3,6 +3,8 @@ import sys
 import logging as log
 np.set_printoptions(threshold=sys.maxsize)
 
+
+# ! This algorithm doesnt work. Needs more thought.
 class LacePaths:
     """ Used to hande the Paths and search space
         
@@ -34,6 +36,8 @@ class LacePaths:
         log.debug("Self.path: %s", self.path)
         self.distance = distance
         log.debug("Self.distance: %s", self.distance)
+
+
     def nextSearch(self,i):
         """ Gets the new to search groups and removes the point from current search space
         
@@ -42,11 +46,15 @@ class LacePaths:
         
         
         Returns:
-            np.array -- tosearch array
+            np.array,bool -- tosearch array and if it is empty or not
         """
         self.toSearch=np.delete(self.toSearch,i,0)
+        if len(self.toSearch)==0:
+            return self.toSearch,True
         # log.info("ToSearch: %s", self.toSearch)
-        return self.toSearch
+        return self.toSearch,False
+    
+
     def finished(self, nodes):
         """ Works out if a complete path has been found
         
@@ -56,7 +64,6 @@ class LacePaths:
         Returns:
             Bool -- Has the search been completed
         """
-        # log.info(self.path)
         if len(self.path)==nodes:
             return True
         else:
@@ -72,6 +79,9 @@ class LacePaths:
         path.reverse()
         return path
 
+
+
+# TODO: remove laces with no search space
 class BottomUp:
     """Used to do bottom up search with an adjusted A* based search
         
