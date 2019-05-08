@@ -15,9 +15,10 @@ def fromVideo(cap, out=None):
         out = cv2.VideoWriter(out,cv2.VideoWriter_fourcc('D','I','V','X'), 10, (int(cap.get(3)),int(cap.get(4))))
     video = Video.Video(cap, out)
     start = time.perf_counter()
-    while(video.cap.isOpened):
+    ret = 1
+    while(video.cap.isOpened and ret == 1):
         log.info("frame: %s", frame)
-        video.shoelaceFinding(frame)
+        ret = video.shoelaceFinding(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         frame +=1
