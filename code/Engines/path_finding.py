@@ -11,13 +11,24 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 class MaskPath:
+    """[summary]
 
-    totalDistance = -1
+    Returns:
+        [type] -- [description]
+    """
+
+    total_distance = -1
     best = None
     total_outside = 0
     total_checked = 0
 
     def __init__(self, points, mask):
+        """[summary]
+
+        Arguments:
+            points {[type]} -- [description]
+            mask {[type]} -- [description]
+        """
         self.points = points
         self.mask = mask
 
@@ -30,13 +41,26 @@ class MaskPath:
             dir_x,
             dir_y
     ):
+        """[summary]
+
+        Arguments:
+            curr_x {[type]} -- [description]
+            curr_y {[type]} -- [description]
+            gradient {[type]} -- [description]
+            major_dir_x {[type]} -- [description]
+            dir_x {[type]} -- [description]
+            dir_y {[type]} -- [description]
+
+        Returns:
+            [type] -- [description]
+        """
         if major_dir_x:
             next_y = curr_y
             for i in range(gradient):
                 next_x = curr_x+dir_x
                 if i == gradient-1:
                     next_y = curr_y+dir_y
-                if mask[next_y, next_x] == 0:
+                if self.mask[next_y, next_x] == 0:
                     self.total_outside += 1
                 self.total_checked += 1
         else:
@@ -45,12 +69,21 @@ class MaskPath:
                 next_y = curr_y+dir_y
                 if i == gradient-1:
                     next_x = curr_x+dir_x
-                if mask[next_y, next_x] == 0:
+                if self.mask[next_y, next_x] == 0:
                     self.total_outside += 1
                 self.total_checked += 1
         return next_x, next_y
 
     def check_mask(self, point1, point2):
+        """[summary]
+
+        Arguments:
+            point1 {[type]} -- [description]
+            point2 {[type]} -- [description]
+
+        Returns:
+            [type] -- [description]
+        """
         x_diff = point1[1]-point2[1]
         y_diff = point1[0]-point2[0]
         x_diff_abs = abs(x_diff)
@@ -63,7 +96,7 @@ class MaskPath:
             major_dir_x = True
             gradient = round(gradient)
         dir_x = int(x_diff/x_diff_abs)
-        dir_x = int(y_diff/y_diff_abs)
+        dir_y = int(y_diff/y_diff_abs)
         curr_x = point1[1]
         curr_y = point1[0]
         end_x = point2[1]
@@ -71,54 +104,55 @@ class MaskPath:
         if dir_x == -1:
             if dir_y == -1:
                 while (curr_x <= end_x and curr_y <= end_y):
-                    curr_x, curr_y = self.interate_mask(
+                    curr_x, curr_y = self.iterate_mask(
                         curr_x,
                         curr_y,
                         gradient,
                         major_dir_x,
                         dir_x,
                         dir_y
-                        )
+                    )
             else:
                 while (curr_x <= end_x and curr_y >= end_y):
-                    curr_x, curr_y = self.interate_mask(
+                    curr_x, curr_y = self.iterate_mask(
                         curr_x,
                         curr_y,
                         gradient,
                         major_dir_x,
                         dir_x,
                         dir_y
-                        )
+                    )
         else:
             if dir_y == -1:
                 while (curr_x >= end_x and curr_y <= end_y):
-                    curr_x, curr_y = self.interate_mask(
+                    curr_x, curr_y = self.iterate_mask(
                         curr_x,
                         curr_y,
                         gradient,
                         major_dir_x,
                         dir_x,
                         dir_y
-                        )
+                    )
             else:
                 while (curr_x >= end_x and curr_y >= end_y):
-                    curr_x, curr_y = self.interate_mask(
+                    curr_x, curr_y = self.iterate_mask(
                         curr_x,
                         curr_y,
                         gradient,
                         major_dir_x,
                         dir_x,
                         dir_y
-                        )
+                    )
         return self.total_outside/self.total_checked
 
-    def reorder(self, pointsRemaining, start, new, first):
+    def reorder(self, points_remaining, start, new, first):
         """
         Reorders the array to that of the shortest distanace between
         points given a certain starting point
 
         Arguments:
-            pointsRemaining {2-D array} -- Array of the points yet to be sorted
+            points_remaining {2-D array} -- Array of the points yet to be
+                                         sorted
             start {1-D array of shape (2)} -- Starting point for the sort
             new {None} -- Used in the recursion
             first {Bool} -- Used to determine if on first level of recursion
@@ -128,49 +162,62 @@ class MaskPath:
         """
 
         if first:
-            distances = np.linalg.norm(pointsRemaining-start, axis=1)
-            mask_cost = np.apply_along_axis(self.check_mask,
-                                            1,
-                                            pointsRemaining,
-                                            start
-                                            )
-            distances = distances*mask_cost
-            x = np.argmin(distances)
-            new = np.array([[pointsRemaining[x], distances[x]]])
-            self.reorder(
-                np.delete(pointsRemaining, x, 0),
-                pointsRemaining[x],
-                new,
-                False
-                )
-        elif len(pointsRemaining) > 1:
-            distances = np.linalg.norm(pointsRemaining-start, axis=1)
-            mask_cost = np.apply_along_axis
+            distances = np.linalg.norm(points_remaining-start, axis=1)
+            mask_cost = np.apply_along_axis(
                 self.check_mask,
                 1,
-                pointsRemaining,
+                points_remaining,
                 start
-                )
+            )
+            distances = distances*mask_cost
+            index = np.argmin(distances)
+            new = np.array([[points_remaining[index], distances[index]]])
+            self.reorder(
+                np.delete(points_remaining, index, 0),
+                points_remaining[index],
+                new,
+                False
+            )
+        elif len(points_remaining) > 1:
+            distances = np.linalg.norm(points_remaining-start, axis=1)
+            mask_cost = np.apply_along_axis(
+                self.check_mask,
+                1,
+                points_remaining,
+                start
+            )
             distances = distances*mask_cost
             index = np.argmin(distances)
             new = np.append(
                 new,
-                [[pointsRemaining[index], distances[index]]],
+                [[points_remaining[index], distances[index]]],
                 axis=0
-                )
-            self.reorder(np.delete(pointsRemaining,index,0),pointsRemaining[index],new, False)
+            )
+            self.reorder(
+                np.delete(points_remaining, index, 0),
+                points_remaining[index],
+                new,
+                False
+            )
         else:
-            new=np.append(new,[[pointsRemaining[0], np.linalg.norm(pointsRemaining-start)]],axis=0)
-            if self.totalDistance>0:
-                values = new[:,1]
+            new = np.append(
+                new,
+                [[
+                    points_remaining[0],
+                    np.linalg.norm(points_remaining-start)
+                ]],
+                axis=0
+            )
+            if self.total_distance > 0:
+                values = new[:, 1]
                 dist = np.sum(values)
-                if dist<self.totalDistance:
-                    self.totalDistance=dist
-                    self.best = np.delete(new,1,1)
+                if dist < self.total_distance:
+                    self.total_distance = dist
+                    self.best = np.delete(new, 1, 1)
             else:
-                values = new[:,1]
-                self.best = np.delete(new,1,1)
-                self.totalDistance=np.sum(values)
+                values = new[:, 1]
+                self.best = np.delete(new, 1, 1)
+                self.total_distance = np.sum(values)
         return 0
 
     def iterate(self):
@@ -180,88 +227,85 @@ class MaskPath:
                 {(list[float],list[float])} - (x,y) points
         """
 
-        for i in range(0,len(self.points)):
-            self.reorder(self.points, self.points[0],None, True)
-            self.points = np.roll(self.points,1,axis=0)
-        x=[]
-        y=[]
+        for i in range(0, len(self.points)):
+            self.reorder(self.points, self.points[0], None, True)
+            self.points = np.roll(self.points, 1, axis=0)
+        x_values = []
+        y_values = []
         log.debug("Path points: \n %s", self.points)
-        for i in range(0,len(self.points)):
-            x.append(self.best[i,0][0])
-            y.append(self.best[i,0][1])
-        return (x,y)
-
-
-
+        # TODO This should be able to be done using np.apply_along_axis for
+        # speed up
+        for i in range(0, len(self.points)):
+            x_values.append(self.best[i, 0][0])
+            y_values.append(self.best[i, 0][1])
+        return (x_values, y_values)
 
 
 # ! This algorithm doesnt work. Needs more thought.
 class LacePaths:
     """ Used to hande the Paths and search space
-        
+
         Arguments:
             point {np.array} -- x,y coordinates of the point at end of path
             toSearch {np.array} -- The search space of remaining points
             path {list} -- List of the points in the current path
-        
+
         Keyword Arguments:
             distance {int} -- The distance of the current path (default: {0})
         """
-    def __init__(self, point, toSearch, path,distance=0):
+    def __init__(self, point, to_search, path, distance=0):
         """ Used to hande the Paths and search space
-        
+
         Arguments:
             point {np.array} -- x,y coordinates of the point at end of path
             toSearch {np.array} -- The search space of remaining points
             path {list} -- List of the points in the current path
-        
+
         Keyword Arguments:
             distance {int} -- The distance of the current path (default: {0})
         """
 
-        self.end=point
+        self.end = point
         log.debug("Self.end: %s", self.end)
-        self.toSearch = toSearch
-        log.debug("Self.toSearch: %s", self.toSearch)
+        self.to_search = to_search
+        log.debug("Self.toSearch: %s", self.to_search)
         self.path = path
         log.debug("Self.path: %s", self.path)
         self.distance = distance
         log.debug("Self.distance: %s", self.distance)
 
+    def next_search(self, i):
+        """ Gets the new to search groups and removes the point from
+        current search space
 
-    def nextSearch(self,i):
-        """ Gets the new to search groups and removes the point from current search space
-        
         Arguments:
             i {int} -- Index of the point to remove from the list
-        
-        
+
         Returns:
             np.array,bool -- tosearch array and if it is empty or not
         """
-        self.toSearch=np.delete(self.toSearch,i,0)
-        if len(self.toSearch)==0:
-            return self.toSearch,True
-        # log.info("ToSearch: %s", self.toSearch)
-        return self.toSearch,False
-    
+        self.to_search = np.delete(self.to_search, i, 0)
+        if self.to_search:
+            return self.to_search, True
+        return self.to_search, False
 
     def finished(self, nodes):
         """ Works out if a complete path has been found
-        
+
         Arguments:
             nodes {int} -- len of the number of points
-        
+
         Returns:
             Bool -- Has the search been completed
         """
-        if len(self.path)==nodes:
+        if len(self.path) == nodes:
             return True
         else:
             return False
+
     def flip(self):
         """ Flips the path
-        
+
         Returns:
             list -- flipped list of path
         """
@@ -271,152 +315,173 @@ class LacePaths:
         return path
 
 
-
 # TODO: remove laces with no search space
 class BottomUp:
     """Used to do bottom up search with an adjusted A* based search
-        
-        Arguments:
-            points {np.array} -- list of points in the search space
-        """
+
+    Arguments:
+        points {np.array} -- list of points in the search space
+    """
     laces = []
+
     def __init__(self, points):
         """Used to do bottom up search with an adjusted A* based search
-        
+
         Arguments:
             points {np.array} -- list of points in the search space
         """
 
         self.points = points
         for i in range(len(self.points)):
-            self.laces.append(LacePaths(self.points[i],np.delete(self.points,i,0),[self.points[i]])) # Current point at end of string, points to search, string
+            # Current point at end of string, points to search, string
+            self.laces.append(
+                LacePaths(
+                    self.points[i],
+                    np.delete(self.points, i, 0),
+                    [self.points[i]]
+                )
+            )
         log.debug("Finished Init")
 
     def distance(self, start, points, index):
         """ Find the shortest distance to add from a search space
-        
+
         Arguments:
             start {np.array} -- point to find distance from
             points {np.array} -- points to search
             index {int} -- index of the point in laces
-        
+
         Returns:
-            (int, float) -- tuple with the index and value of the shortest distance
+            (int, float) -- tuple with the index and value of the shortest
+                         distance
         """
 
-        distances = np.linalg.norm(points - start, axis=1) # get distances from point
-        return np.argmin(distances), np.min(distances)+self.laces[index].distance
+        # get distances from point
+        distances = np.linalg.norm(points - start, axis=1)
+        new_distance = np.min(distances)+self.laces[index].distance
+        return np.argmin(distances), new_distance
 
-    def expandSearch(self):
+    def expand_search(self):
         """ Increase search space using the path with the shortest heuristic
-        
+
         Returns:
             Bool -- Has it completed its search
         """
-
-        nextIndex, minDistance, pointIndex = self.next() #Find next best point by working out total distance looked at
-        point = self.laces[nextIndex].toSearch[pointIndex]
-        newSearch = self.laces[nextIndex].nextSearch(pointIndex)
-        path = self.laces[nextIndex].path
+        # Find next best point by working out total distance looked at
+        next_index, min_distance, point_index = self.next()
+        point = self.laces[next_index].to_search[point_index]
+        new_search = self.laces[next_index].next_search(point_index)
+        path = self.laces[next_index].path
         path.append(np.array(point))
         log.debug("Path: %s", path)
         self.laces.append(
             LacePaths(
-                point, #New point
-                newSearch,  #updated search space
-                path, # updated lace
-                distance=minDistance # Min distance
+                point,  # New point
+                new_search,  # updated search space
+                path,  # updated lace
+                distance=min_distance  # Min distance
             )
         )
         if self.laces[-1].finished(len(self.points)):
             return True
         else:
-            newPath = self.laces[-1].flip()
+            new_path = self.laces[-1].flip()
             self.laces.append(
                 LacePaths(
-                    newPath[0], #Inverse of above
-                    newSearch,
-                    newPath,
-                    distance=minDistance
+                    new_path[0],  # Inverse of above
+                    new_search,
+                    new_path,
+                    distance=min_distance
                 )
             )
             return False
 
     def next(self):
         """ finds the next path to expand with smallest heuristic
-        
+
         Returns:
-            (int, float, int) -- index of the best lace, value of the heuristic distance, index of point that produces that
+            (int, float, int) -- index of the best lace, value of the
+            heuristic distance, index of point that produces that
         """
 
-        currMin = np.inf
+        curr_min = np.inf
         for i in range(len(self.laces)):
-            log.debug("next Searching: %s", self.laces[i].toSearch)
-            tmpNext,tmpMin=self.distance(self.laces[i].end,self.laces[i].toSearch,i)
-            if tmpMin<currMin:
-                currMin = tmpMin
-                currMinIndex = tmpNext
-                currNext=i
-        return currNext, currMin, currMinIndex
-    def getBest(self):
+            log.debug("next Searching: %s", self.laces[i].to_search)
+            tmp_nxt, tmp_min = self.distance(
+                self.laces[i].end,
+                self.laces[i].toSearch,
+                i
+            )
+            if tmp_min < curr_min:
+                curr_min = tmp_min
+                curr_min_index = tmp_nxt
+                curr_nxt = i
+        return curr_nxt, curr_min, curr_min_index
+
+    def get_best(self):
         """Get the return value in correct format
-        
         Returns:
             (list,list) -- tuple of x,y listss
         """
 
-        x=[]
-        y=[]
+        x_values = []
+        y_values = []
+        # TODO This should be able to be done using np.apply_along_axis for
+        # speed up
         for i in range(len(self.laces[-1].path)):
-            x.append(self.laces[-1].path[i][0])
-            y.append(self.laces[-1].path[i][1])
-        return (x,y)
+            x_values.append(self.laces[-1].path[i][0])
+            y_values.append(self.laces[-1].path[i][1])
+        return (x_values, y_values)
+
     def run(self):
         """ runs the class search
-        
+
         Returns:
             (list,list) -- tuple of x,y listss
         """
-        count=0
+        count = 0
         finished = False
         while not finished:
-            finished=self.expandSearch()
-            count+=1
-            log.debug("Count: %s",count)
-        log.info("Count: %s",count)
-        return self.getBest()
-        
+            finished = self.expand_search()
+            count += 1
+            log.debug("Count: %s", count)
+        log.info("Count: %s", count)
+        return self.get_best()
+
 
 class ShortestPaths:
-    """Used to hande the finding of the shortest path to connectg a set of points - definitely not efficient
-    
+    """Used to hande the finding of the shortest path to connectg a set of
+    points - definitely not efficient
+
         Variabels:
             points {2-D numpy array} - list of points to be connected
     """
-    totalDistance=-1
+    totalDistance = -1
     best = None
+
     def __init__(self, points):
-        """Used to hande the finding of the shortest path to connectg a set of points - definitely not efficient
-    
+        """Used to hande the finding of the shortest path to connectg a set
+        of points - definitely not efficient
         Variabels:
             points {2-D numpy array} - list of points to be connected
         """
-        self.points = np.insert(points,0,np.arange(len(points)),axis=1)
-
-    
+        self.points = np.insert(points, 0, np.arange(len(points)), axis=1)
 
 
 class Paths:
-    """Used to hande the finding of the shortest path to connectg a set of points - definitely not efficient
-    
+    """Used to hande the finding of the shortest path to connectg a set of
+    points - definitely not efficient
+
         Variabels:
             points {2-D numpy array} - list of points to be connected
     """
-    totalDistance=-1
+    total_distance = -1
     best = None
+
     def __init__(self, points):
-        """Used to hande the finding of the shortest path to connectg a set of points - definitely not efficient
-    
+        """Used to hande the finding of the shortest path to connectg a
+        set of points - definitely not efficient
+
         Variabels:
             points {2-D numpy array} - list of points to be connected
         """
@@ -424,11 +489,13 @@ class Paths:
         log.debug("Points in path: \n %s", self.points)
 
     # ! work out wasted processing
-    def reorder(self, pointsRemaining, start, new, first):
-        """ Reorders the array to that of the shortest distanace between points given a certain starting point
+    def reorder(self, points_remaining, start, new, first):
+        """ Reorders the array to that of the shortest distanace between
+        points given a certain starting point
 
         Arguments:
-            pointsRemaining {2-D array} -- Array of the points yet to be sorted
+            points_remaining {2-D array} -- Array of the points yet to be
+                                         sorted
             start {1-D array of shape (2)} -- Starting point for the sort
             new {None} -- Used in the recursion
             first {Bool} -- Used to determine if on first level of recursion
@@ -438,28 +505,53 @@ class Paths:
         """
 
         if first:
-            distances = np.linalg.norm(pointsRemaining-start, axis=1)
-            x=np.argmin(distances)
-            new= np.array([[pointsRemaining[x],distances[x]]])
-            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new,False)
-        elif len(pointsRemaining)>1:
-            distances = np.linalg.norm(pointsRemaining-start, axis=1)
-            x=np.argmin(distances)
-            new=np.append(new,[[pointsRemaining[x],distances[x]]],axis=0)
-            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new, False)
+            distances = np.linalg.norm(points_remaining-start, axis=1)
+            index = np.argmin(distances)
+            new = np.array([[points_remaining[index], distances[index]]])
+            self.reorder(
+                np.delete(points_remaining, index, 0),
+                points_remaining[index],
+                new,
+                False
+            )
+        elif len(points_remaining) > 1:
+            distances = np.linalg.norm(points_remaining-start, axis=1)
+            index = np.argmin(distances)
+            new = np.append(
+                new,
+                [[
+                    points_remaining[index],
+                    distances[index]
+                ]],
+                axis=0
+            )
+            self.reorder(
+                np.delete(points_remaining, index, 0),
+                points_remaining[index],
+                new,
+                False
+            )
         else:
-            new=np.append(new,[[pointsRemaining[0], np.linalg.norm(pointsRemaining-start)]],axis=0)
-            if self.totalDistance>0:
-                values = new[:,1]
+            new = np.append(
+                new,
+                [[
+                    points_remaining[0],
+                    np.linalg.norm(points_remaining-start)
+                ]],
+                axis=0
+            )
+            if self.total_distance > 0:
+                values = new[:, 1]
                 dist = np.sum(values)
-                if dist<self.totalDistance:
-                    self.totalDistance=dist
-                    self.best = np.delete(new,1,1)
+                if dist < self.total_distance:
+                    self.total_distance = dist
+                    self.best = np.delete(new, 1, 1)
             else:
-                values = new[:,1]
-                self.best = np.delete(new,1,1)
-                self.totalDistance=np.sum(values)
+                values = new[:, 1]
+                self.best = np.delete(new, 1, 1)
+                self.total_distance = np.sum(values)
         return 0
+
     def iterate(self):
         """Used to interate through all possible lists to find shortest distance
 
@@ -467,13 +559,15 @@ class Paths:
                 {(list[float],list[float])} - (x,y) points
         """
 
-        for i in range(0,len(self.points)):
-            self.reorder(self.points, self.points[0],None, True)
-            self.points = np.roll(self.points,1,axis=0)
-        x=[]
-        y=[]
+        for i in range(0, len(self.points)):
+            self.reorder(self.points, self.points[0], None, True)
+            self.points = np.roll(self.points, 1, axis=0)
+        x_value = []
+        y_value = []
         log.debug("Path points: \n %s", self.points)
-        for i in range(0,len(self.points)):
-            x.append(self.best[i,0][0])
-            y.append(self.best[i,0][1])
-        return (x,y)
+        # TODO This should be able to be done using np.apply_along_axis for
+        # speed up
+        for i in range(0, len(self.points)):
+            x_value.append(self.best[i, 0][0])
+            y_value.append(self.best[i, 0][1])
+        return (x_value, y_value)
