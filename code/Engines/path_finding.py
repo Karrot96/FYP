@@ -1,39 +1,54 @@
-import numpy as np
+"""[summary]
+
+Returns:
+    [type] -- [description]
+"""
+
 import sys
 import logging as log
+import numpy as np
 np.set_printoptions(threshold=sys.maxsize)
+
 
 class MaskPath:
 
-    totalDistance=-1
+    totalDistance = -1
     best = None
     total_outside = 0
     total_checked = 0
-    def __init__(self,points,mask):
+
+    def __init__(self, points, mask):
         self.points = points
         self.mask = mask
-    
-    def iterate_mask(self, curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y):
+
+    def iterate_mask(
+            self,
+            curr_x,
+            curr_y,
+            gradient,
+            major_dir_x,
+            dir_x,
+            dir_y
+    ):
         if major_dir_x:
             next_y = curr_y
             for i in range(gradient):
                 next_x = curr_x+dir_x
                 if i == gradient-1:
                     next_y = curr_y+dir_y
-                if mask[next_y, next_x]==0:
-                    self.total_outside+=1
-                self.total_checked+=1
+                if mask[next_y, next_x] == 0:
+                    self.total_outside += 1
+                self.total_checked += 1
         else:
             next_x = curr_x
             for i in range(gradient):
                 next_y = curr_y+dir_y
                 if i == gradient-1:
                     next_x = curr_x+dir_x
-                if mask[next_y, next_x]==0:
-                    self.total_outside+=1
-                self.total_checked+=1
+                if mask[next_y, next_x] == 0:
+                    self.total_outside += 1
+                self.total_checked += 1
         return next_x, next_y
-
 
     def check_mask(self, point1, point2):
         x_diff = point1[1]-point2[1]
@@ -53,26 +68,54 @@ class MaskPath:
         curr_y = point1[0]
         end_x = point2[1]
         end_y = point2[0]
-        if dir_x ==-1:
-            if dir_y == -1
-                while (curr_x <= end_x AND curr_y <= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
+        if dir_x == -1:
+            if dir_y == -1:
+                while (curr_x <= end_x and curr_y <= end_y):
+                    curr_x, curr_y = self.interate_mask(
+                        curr_x,
+                        curr_y,
+                        gradient,
+                        major_dir_x,
+                        dir_x,
+                        dir_y
+                        )
             else:
-                while (curr_x <= end_x AND curr_y >= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
+                while (curr_x <= end_x and curr_y >= end_y):
+                    curr_x, curr_y = self.interate_mask(
+                        curr_x,
+                        curr_y,
+                        gradient,
+                        major_dir_x,
+                        dir_x,
+                        dir_y
+                        )
         else:
-            if dir_y == -1
-                while (curr_x >= end_x AND curr_y <= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
+            if dir_y == -1:
+                while (curr_x >= end_x and curr_y <= end_y):
+                    curr_x, curr_y = self.interate_mask(
+                        curr_x,
+                        curr_y,
+                        gradient,
+                        major_dir_x,
+                        dir_x,
+                        dir_y
+                        )
             else:
-                while (curr_x >= end_x AND curr_y >= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
-        return self.total_outside/self.total_checked 
-
-
+                while (curr_x >= end_x and curr_y >= end_y):
+                    curr_x, curr_y = self.interate_mask(
+                        curr_x,
+                        curr_y,
+                        gradient,
+                        major_dir_x,
+                        dir_x,
+                        dir_y
+                        )
+        return self.total_outside/self.total_checked
 
     def reorder(self, pointsRemaining, start, new, first):
-        """ Reorders the array to that of the shortest distanace between points given a certain starting point
+        """
+        Reorders the array to that of the shortest distanace between
+        points given a certain starting point
 
         Arguments:
             pointsRemaining {2-D array} -- Array of the points yet to be sorted
@@ -86,18 +129,36 @@ class MaskPath:
 
         if first:
             distances = np.linalg.norm(pointsRemaining-start, axis=1)
-            mask_cost = np.apply_along_axis(self.check_mask, 1, pointsRemaining, start)
+            mask_cost = np.apply_along_axis(self.check_mask,
+                                            1,
+                                            pointsRemaining,
+                                            start
+                                            )
             distances = distances*mask_cost
             x = np.argmin(distances)
-            new = np.array([[pointsRemaining[x],distances[x]]])
-            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new,False)
-        elif len(pointsRemaining)>1:
+            new = np.array([[pointsRemaining[x], distances[x]]])
+            self.reorder(
+                np.delete(pointsRemaining, x, 0),
+                pointsRemaining[x],
+                new,
+                False
+                )
+        elif len(pointsRemaining) > 1:
             distances = np.linalg.norm(pointsRemaining-start, axis=1)
-            mask_cost = np.apply_along_axis(self.check_mask, 1, pointsRemaining, start)
+            mask_cost = np.apply_along_axis
+                self.check_mask,
+                1,
+                pointsRemaining,
+                start
+                )
             distances = distances*mask_cost
-            x=np.argmin(distances)
-            new=np.append(new,[[pointsRemaining[x],distances[x]]],axis=0)
-            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new, False)
+            index = np.argmin(distances)
+            new = np.append(
+                new,
+                [[pointsRemaining[index], distances[index]]],
+                axis=0
+                )
+            self.reorder(np.delete(pointsRemaining,index,0),pointsRemaining[index],new, False)
         else:
             new=np.append(new,[[pointsRemaining[0], np.linalg.norm(pointsRemaining-start)]],axis=0)
             if self.totalDistance>0:

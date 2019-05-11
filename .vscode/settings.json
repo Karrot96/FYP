@@ -1,0 +1,16 @@
+{
+    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
+    "python.linting.pep8Enabled": true,
+    "python.linting.pylintEnabled": true,
+    "files.autoSave": "afterDelay",
+    "python.autoComplete.addBrackets": true,
+    "python.globalModuleInstallation": true,
+    "python.linting.pep8CategorySeverity.W": "Warning",
+    "python.linting.pylintArgs": [
+        "Warning",
+        "Convention",
+        "Refactor",
+        "--extension-pkg-whitelist=cv2, scipy",
+    ],
+    "python.linting.pylintUseMinimalCheckers": false
+}
