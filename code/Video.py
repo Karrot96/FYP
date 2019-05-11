@@ -38,8 +38,9 @@ class Video:
         """
         try:
             ret, frame = self.cap.read()
-            width = frame.shape[0]
-            log.debug("Frame :%s, width: %s",frameNo, width)
+            if not ret:
+                return 0
+            log.debug("Frame :%s, width: %s",frameNo, frame.shape[0])
             log.debug("Frame :%s, image resolution is: %s",frameNo, frame.shape)
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             lower_yellow = np.array([220,220,220])
@@ -60,6 +61,7 @@ class Video:
                 self.out.write(frame)
                 log.info("Writing Frame")
             log.debug("Frame :%s, Rope positions, %s",frameNo, self.rope.lace)
+            return 1
         except Exception as e:
             log.error("Exception occurred", exc_info=True)
             exit()
