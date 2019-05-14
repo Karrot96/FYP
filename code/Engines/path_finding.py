@@ -1,4 +1,4 @@
-"""[summary]
+""" TODO: Currently Untested 15/5/19
 
 Returns:
     [type] -- [description]
@@ -227,17 +227,16 @@ class MaskPath:
                 {(list[float],list[float])} - (x,y) points
         """
 
-        for i in range(0, len(self.points)):
-            self.reorder(self.points, self.points[0], None, True)
-            self.points = np.roll(self.points, 1, axis=0)
+        for point in (self.points):
+            self.reorder(self.points, point, None, True)
         x_values = []
         y_values = []
         log.debug("Path points: \n %s", self.points)
         # TODO This should be able to be done using np.apply_along_axis for
         # speed up
-        for i in range(0, len(self.points)):
-            x_values.append(self.best[i, 0][0])
-            y_values.append(self.best[i, 0][1])
+        for best in self.best:
+            x_values.append(best[0][0])
+            y_values.append(best[0][1])
         return (x_values, y_values)
 
 
@@ -332,13 +331,13 @@ class BottomUp:
         """
 
         self.points = points
-        for i in range(len(self.points)):
+        for i, point in enumerate(self.points):
             # Current point at end of string, points to search, string
             self.laces.append(
                 LacePaths(
-                    self.points[i],
+                    point,
                     np.delete(self.points, i, 0),
-                    [self.points[i]]
+                    [point]
                 )
             )
         log.debug("Finished Init")
@@ -405,11 +404,11 @@ class BottomUp:
         """
 
         curr_min = np.inf
-        for i in range(len(self.laces)):
-            log.debug("next Searching: %s", self.laces[i].to_search)
+        for i, lace in enumerate(self.laces):
+            log.debug("next Searching: %s", lace.to_search)
             tmp_nxt, tmp_min = self.distance(
-                self.laces[i].end,
-                self.laces[i].toSearch,
+                lace.end,
+                lace.toSearch,
                 i
             )
             if tmp_min < curr_min:
@@ -428,9 +427,9 @@ class BottomUp:
         y_values = []
         # TODO This should be able to be done using np.apply_along_axis for
         # speed up
-        for i in range(len(self.laces[-1].path)):
-            x_values.append(self.laces[-1].path[i][0])
-            y_values.append(self.laces[-1].path[i][1])
+        for i, path in enumerate(self.laces[-1].path):
+            x_values.append(path[0])
+            y_values.append(path[1])
         return (x_values, y_values)
 
     def run(self):
@@ -559,15 +558,14 @@ class Paths:
                 {(list[float],list[float])} - (x,y) points
         """
 
-        for i in range(0, len(self.points)):
-            self.reorder(self.points, self.points[0], None, True)
-            self.points = np.roll(self.points, 1, axis=0)
+        for point in self.points:
+            self.reorder(self.points, point, None, True)
         x_value = []
         y_value = []
         log.debug("Path points: \n %s", self.points)
         # TODO This should be able to be done using np.apply_along_axis for
         # speed up
-        for i in range(0, len(self.points)):
-            x_value.append(self.best[i, 0][0])
-            y_value.append(self.best[i, 0][1])
+        for best in self.best:
+            x_value.append(best[0][0])
+            y_value.append(best[0][1])
         return (x_value, y_value)

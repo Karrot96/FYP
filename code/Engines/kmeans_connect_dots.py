@@ -160,10 +160,10 @@ class Engine:
         x_locations, y_locations = path.iterate()
         log.debug("x: %s", x_locations)
         log.debug("y: %s", y_locations)
-        for i in range(0, len(self.rope.lace)):
+        for i, j, k in enumerate(zip(x_locations, y_locations)):
             self.rope.lace[i] = np.array([
-                int(x_locations[i]),
-                int(y_locations[i]),
+                int(j),
+                int(k),
                 self.rope.lace[i][2]
                 ])
         log.debug("rope: %s", self.rope.lace)
