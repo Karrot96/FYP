@@ -9,7 +9,7 @@ import numpy as np
 import rope
 from scipy import spatial
 from sklearn.cluster import KMeans
-from Engines.path_finding import Paths
+from path_finding import Paths
 np.set_printoptions(threshold=sys.maxsize)
 
 

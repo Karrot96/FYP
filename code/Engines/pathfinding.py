@@ -3,6 +3,7 @@ import sys
 import logging as log
 np.set_printoptions(threshold=sys.maxsize)
 
+
 class MaskPath:
 
     totalDistance=-1
