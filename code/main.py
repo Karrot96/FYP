@@ -33,11 +33,11 @@ def from_video(cap, out=None):
     ret = 1
     while(vid.cap.isOpened and ret == 1):
         log.info("frame: %s", frame)
-        ret = video.shoelaceFinding(frame)
+        ret = vid.shoelace_finding(frame)
         log.info(ret)
         if ret == 0:
             exit()
-        if cv2.waitKey(1) & 0xFF == ord('q') :
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         frame += 1
         end = time.perf_counter()
