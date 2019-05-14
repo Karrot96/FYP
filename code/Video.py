@@ -55,7 +55,7 @@ class Video:
 
 
             frame = self.rope.draw_lace(frame)
-            # cv2.imshow('edges', edges)
+            #cv2.imshow('edges', mask)
             # cv2.imshow('frame', frame)
             if self.out:
                 self.out.write(frame)

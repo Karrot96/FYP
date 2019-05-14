@@ -7,71 +7,98 @@ class MaskPath:
 
     totalDistance=-1
     best = None
-    total_outside = 0
-    total_checked = 0
     def __init__(self,points,mask):
         self.points = points
         self.mask = mask
-    
-    def iterate_mask(self, curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y):
+    def iterate_mask(self, curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y, end_x, end_y, total_outside, total_checked):
+        log.debug("Gradient: %s", gradient)
         if major_dir_x:
             next_y = curr_y
             for i in range(gradient):
                 next_x = curr_x+dir_x
                 if i == gradient-1:
                     next_y = curr_y+dir_y
-                if mask[next_y, next_x]==0:
-                    self.total_outside+=1
-                self.total_checked+=1
+                log.debug("x: %s, y: %s end: %s, %s dir: %s ,%s",next_x,next_y, end_x, end_y, dir_x, dir_y)
+                if next_x >= self.mask.shape[0]:
+                    next_x=self.mask.shape[0]-1
+                if next_y >= self.mask.shape[1]:
+                    next_y=self.mask.shape[1]-1
+                log.debug("Mask Value: %s",self.mask[next_x, next_y])
+                if self.mask[next_x, next_y]==0:
+                    total_outside+=1
+                total_checked+=1
         else:
             next_x = curr_x
             for i in range(gradient):
                 next_y = curr_y+dir_y
                 if i == gradient-1:
                     next_x = curr_x+dir_x
-                if mask[next_y, next_x]==0:
-                    self.total_outside+=1
-                self.total_checked+=1
-        return next_x, next_y
+                log.debug("x: %s, y: %s end: %s, %s dir: %s ,%s",next_x,next_y, end_x, end_y, dir_x, dir_y)
+                if next_x >= self.mask.shape[0]:
+                    next_x=self.mask.shape[0]-1
+                if next_y >= self.mask.shape[1]:
+                    next_y=self.mask.shape[1]-1
+                log.debug("Mask Value: %s",self.mask[next_x, next_y])
+                if self.mask[next_x, next_y]==0:
+                    total_outside+=1
+                total_checked+=1
+        total_checked+=1
+        return next_x, next_y, total_outside, total_checked
 
 
     def check_mask(self, point1, point2):
-        x_diff = point1[1]-point2[1]
-        y_diff = point1[0]-point2[0]
+        total_outside = 0
+        total_checked = 1
+        x_diff = int(point1[0]-point2[0])
+        y_diff = int(point1[1]-point2[1])
+        if x_diff == 0:
+            x_diff += 1
+        if y_diff == 0:
+            y_diff += 1
+        log.debug("x_diff, %s, y_diff, %s", x_diff, y_diff)
         x_diff_abs = abs(x_diff)
         y_diff_abs = abs(y_diff)
         gradient = y_diff_abs/x_diff_abs
         if gradient < 1:
             major_dir_x = False
-            gradient = round(1/gradient)
+            gradient = int(1/gradient)
         else:
             major_dir_x = True
-            gradient = round(gradient)
-        dir_x = int(x_diff/x_diff_abs)
-        dir_x = int(y_diff/y_diff_abs)
-        curr_x = point1[1]
-        curr_y = point1[0]
-        end_x = point2[1]
-        end_y = point2[0]
-        if dir_x ==-1:
-            if dir_y == -1
-                while (curr_x <= end_x AND curr_y <= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
+            gradient = int(gradient)
+        dir_x = -int(x_diff/x_diff_abs)
+        dir_y = -int(y_diff/y_diff_abs)
+        log.debug("x_dir, %s, y_dir, %s", dir_x, dir_y)
+        curr_x = int(point1[0])
+        curr_y = int(point1[1])
+        end_x = int(point2[0])
+        end_y = int(point2[1])
+        log.debug("curr_x, %s, curr_y, %s, end_x: %s, end_y: %s, dir_x: %s, dir_y: %s", curr_x, curr_y, end_x, end_y, dir_x, dir_y)
+        if dir_x == -1:
+            if dir_y == -1:
+                while (curr_x >= end_x+5 and curr_y >= end_y+5 and total_outside< 40):
+                    curr_x, curr_y, total_outside, total_checked=self.iterate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y, end_x, end_y, total_outside, total_checked)
             else:
-                while (curr_x <= end_x AND curr_y >= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
+                while (curr_x >= end_x+5 and curr_y <= end_y-5 and total_outside< 40):
+                    curr_x, curr_y, total_outside, total_checked=self.iterate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y,end_x, end_y, total_outside, total_checked)
         else:
-            if dir_y == -1
-                while (curr_x >= end_x AND curr_y <= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
+            if dir_y == -1:
+                while (curr_x <= end_x-5 and curr_y >= end_y+5 and total_outside< 40):
+                    curr_x, curr_y, total_outside, total_checked=self.iterate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y, end_x, end_y, total_outside, total_checked)
             else:
-                while (curr_x >= end_x AND curr_y >= end_y):
-                    curr_x, curr_y=self.interate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y)
-        return self.total_outside/self.total_checked 
+                while (curr_x <= end_x-5 and curr_y <= end_y-5 and total_outside< 40):
+                    curr_x, curr_y, total_outside, total_checked=self.iterate_mask(curr_x, curr_y, gradient, major_dir_x, dir_x, dir_y, end_x, end_y, total_outside, total_checked)
+        log.debug("value: %s", total_outside/total_checked)
+        if total_outside ==0:
+            #log.info(total_outside)
+            return 0.1
+        if total_outside>=40:
+            #log.info(total_outside)
+            return 5
+        return total_outside/total_checked
 
 
 
-    def reorder(self, pointsRemaining, start, new, first):
+    def reorder(self, pointsRemaining, start, new, first, mask_total):
         """ Reorders the array to that of the shortest distanace between points given a certain starting point
 
         Arguments:
@@ -89,17 +116,23 @@ class MaskPath:
             mask_cost = np.apply_along_axis(self.check_mask, 1, pointsRemaining, start)
             distances = distances*mask_cost
             x = np.argmin(distances)
+            mask_total = mask_total+mask_cost[x]
             new = np.array([[pointsRemaining[x],distances[x]]])
-            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new,False)
+            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new,False, mask_total)
         elif len(pointsRemaining)>1:
             distances = np.linalg.norm(pointsRemaining-start, axis=1)
             mask_cost = np.apply_along_axis(self.check_mask, 1, pointsRemaining, start)
             distances = distances*mask_cost
             x=np.argmin(distances)
+            mask_total = mask_total+mask_cost[x]
             new=np.append(new,[[pointsRemaining[x],distances[x]]],axis=0)
-            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new, False)
+            self.reorder(np.delete(pointsRemaining,x,0),pointsRemaining[x],new, False, mask_total)
         else:
-            new=np.append(new,[[pointsRemaining[0], np.linalg.norm(pointsRemaining-start)]],axis=0)
+            distances = np.linalg.norm(pointsRemaining-start, axis=1)
+            mask_cost = np.apply_along_axis(self.check_mask, 1, pointsRemaining, start)
+            distances = distances*mask_cost
+            x=np.argmin(distances)
+            new=np.append(new,[[pointsRemaining[x],distances[x]]],axis=0)
             if self.totalDistance>0:
                 values = new[:,1]
                 dist = np.sum(values)
@@ -118,9 +151,8 @@ class MaskPath:
             Returns:
                 {(list[float],list[float])} - (x,y) points
         """
-
         for i in range(0,len(self.points)):
-            self.reorder(self.points, self.points[0],None, True)
+            self.reorder(self.points, self.points[0],None, True,0)
             self.points = np.roll(self.points,1,axis=0)
         x=[]
         y=[]
