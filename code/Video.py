@@ -9,7 +9,7 @@ import logging as log
 import numpy as np
 import cv2
 import rope
-from Engines.kmeans_connect_dots import Engine
+from Engines.mask_mapping import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 
