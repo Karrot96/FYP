@@ -9,7 +9,7 @@ import logging as log
 import numpy as np
 import cv2
 import rope
-from Engines.kmeans_connect_dots_with_mask import Engine
+from Engines.kmeans_connect_dots import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -58,7 +58,7 @@ class Video:
             log.debug("Frame :%s, Edges \n: %s", frame_no, edges)
             # Engines
             log.info("Starting Engine Run")
-            self.rope = self.engine.run(edges, mask)
+            self.rope = self.engine.run(edges)
             log.info("Engine Finished")
             frame = self.rope.draw_lace(frame)
             # cv2.imshow('edges', mask)

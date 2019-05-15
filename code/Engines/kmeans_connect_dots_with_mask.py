@@ -9,7 +9,7 @@ import numpy as np
 import rope
 from scipy import spatial
 from sklearn.cluster import KMeans
-from path_finding import MaskPath
+from Engines.path_finding import MaskPath
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -67,7 +67,7 @@ class Engine:
         """
         non_zero = np.nonzero(arr)  # Get non-zero y values constituting edges
         first_non_zero = non_zero[0]
-        if first_non_zero:
+        if first_non_zero.any():
             log.debug("A:%s B:%s", len(arr), len(first_non_zero))
             log.debug("Z:%s", first_non_zero)
         # Output array same size as input array so numpy doesnt complain

@@ -9,7 +9,7 @@ import numpy as np
 import rope
 from scipy import spatial
 from sklearn.cluster import KMeans
-from path_finding import Paths
+from Engines.path_finding import Paths
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -68,7 +68,7 @@ class Engine:
         """
         non_zero = np.nonzero(arr)  # Get non-zero y values constituting edges
         first_non_zero = non_zero[0]
-        if first_non_zero:
+        if first_non_zero.any():
             log.debug("A:%s B:%s", len(arr), len(first_non_zero))
             log.debug("Z:%s", first_non_zero)
         # Output array same size as input array so numpy doesnt complain
@@ -160,7 +160,7 @@ class Engine:
         x_locations, y_locations = path.iterate()
         log.debug("x: %s", x_locations)
         log.debug("y: %s", y_locations)
-        for i, j, k in enumerate(zip(x_locations, y_locations)):
+        for i, (j, k) in enumerate(zip(x_locations, y_locations)):
             self.rope.lace[i] = np.array([
                 int(j),
                 int(k),
