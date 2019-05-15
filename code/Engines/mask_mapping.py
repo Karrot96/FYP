@@ -10,6 +10,7 @@ from scipy import spatial
 from Engines.path_finding import Paths
 np.set_printoptions(threshold=sys.maxsize)
 
+
 class Engine:
     """[summary]
     """
@@ -34,14 +35,14 @@ class Engine:
             n_clusters=self.rope.NO_NODES,
             init='k-means++',
             batch_size=10,
-            computer_labels=False
-            ).fit(plot).cluster_centers_
+            compute_labels=False
+        ).fit(plot).cluster_centers_
         log.debug("Locations are: \n %s", locations)
         return locations
-    
+
     # def run(self, edges, mask):
     #     """[summary]
-        
+
     #     Arguments:
     #         edges {[type]} -- [description]
     #         mask {[type]} -- [description]
@@ -105,34 +106,34 @@ class Engine:
             )
         return out  # Return the midpoints of each point
 
-    def locate_y(self, arr):
-        """Find the y value associated with nonzero value a
+    # def locate_y(self, arr):
+    #     """Find the y value associated with nonzero value a
 
-        Arguments:
-            a {np.array} -- [x y] of the index of the needed y value within
-                         self.lace
+    #     Arguments:
+    #         a {np.array} -- [x y] of the index of the needed y value within
+    #                      self.lace
 
-        Returns:
-            [tuple] -- (x,y) of the location within frame of the point
-        """
+    #     Returns:
+    #         [tuple] -- (x,y) of the location within frame of the point
+    #     """
 
-        y_location = self.lace[arr[0], arr[1]]
-        return (arr[1], y_location)
+    #     y_location = self.lace[arr[0], arr[1]]
+    #     return (arr[1], y_location)
 
-    def locate_x(self, arr):
-        """Find the x value associated with nonzero value a
+    # def locate_x(self, arr):
+    #     """Find the x value associated with nonzero value a
 
-        Arguments:
-            a {np.array} -- [x y] of the index of the needed x value within
-                         self.lace
+    #     Arguments:
+    #         a {np.array} -- [x y] of the index of the needed x value within
+    #                      self.lace
 
-        Returns:
-            [tuple] -- (x,y) of the location within frame of the point
-        """
-        x_location = self.lace[arr[0], arr[1]]
-        return (x_location, arr[0])
+    #     Returns:
+    #         [tuple] -- (x,y) of the location within frame of the point
+    #     """
+    #     x_location = self.lace[arr[0], arr[1]]
+    #     return (x_location, arr[0])
 
-    def run(self, edges):
+    def run(self, mask):
         """ Used to run the processing on images
 
         Arguments:
@@ -141,25 +142,24 @@ class Engine:
         Returns:
             Rope -- full upadated rope obkect
         """
-
-        self.lace = np.apply_along_axis(self.get_points, 0, edges)
-        shoelace = np.nonzero(self.lace)  # Remove padded 0's
-        combined_y = np.apply_along_axis(
-            self.locate_y,
-            1,
-            np.transpose(shoelace)
-            )
-        self.lace = np.apply_along_axis(self.get_points, 1, edges)
-        # * Transpose lace so that non-zero acts on the right axis.
-        # * Transpose shoelace so that the points are outputs in array of [y x]
-        shoelace = np.nonzero(self.lace)
-        combined_x = np.apply_along_axis(
-            self.locate_x,
-            1,
-            np.transpose(shoelace)
-            )
-        combined = np.concatenate((combined_x, combined_y))
-        clusters = self.kmeans(combined[0::20])
+        # self.lace = np.apply_along_axis(self.get_points, 0, edges)
+        # shoelace = np.nonzero(self.lace)  # Remove padded 0's
+        # combined_y = np.apply_along_axis(
+        #     self.locate_y,
+        #     1,
+        #     np.transpose(shoelace)
+        #     )
+        # self.lace = np.apply_along_axis(self.get_points, 1, edges)
+        # # * Transpose lace so that non-zero acts on the right axis.
+        # * Transpose shoelace so that the points are outputs in array of [yx]
+        # shoelace = np.nonzero(self.lace)
+        # combined_x = np.apply_along_axis(
+        #     self.locate_x,
+        #     1,
+        #     np.transpose(shoelace)
+        #     )
+        # combined = np.concatenate((combined_x, combined_y))
+        clusters = self.kmeans(np.transpose(np.nonzero(mask)))
         log.debug("clusters: \n %s", clusters)
         log.debug(np.shape(clusters))
         path = Paths(clusters)
@@ -174,4 +174,3 @@ class Engine:
                 ])
         log.debug("rope: %s", self.rope.lace)
         return self.rope
-    
