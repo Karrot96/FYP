@@ -18,7 +18,7 @@ class Rope:
         lace {np.array} -- location of all the nodes in 3-D space
         DISTANCE_BETWEEN_NODES {int} -- Distance between nodes in pixels
     """
-    NO_NODES = 10
+    NO_NODES = 50
     # lace is shape (x,y,z)
     lace = np.zeros((NO_NODES, 3))
     DISTANCE_BETWEEN_NODES = 10
