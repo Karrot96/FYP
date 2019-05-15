@@ -162,7 +162,7 @@ class Engine:
         clusters = self.kmeans(np.transpose(np.nonzero(mask)))
         log.debug("clusters: \n %s", clusters)
         log.debug(np.shape(clusters))
-        path = Paths(clusters)
+        path = Paths(zip(clusters[:,1], clusters[:,0]))
         x_locations, y_locations = path.iterate()
         log.debug("x: %s", x_locations)
         log.debug("y: %s", y_locations)
