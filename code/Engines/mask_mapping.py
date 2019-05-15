@@ -34,7 +34,7 @@ class Engine:
         locations = MiniBatchKMeans(
             n_clusters=self.rope.NO_NODES,
             init='k-means++',
-            batch_size=10,
+            batch_size=int(self.rope.NO_NODES/3),
             compute_labels=False
         ).fit(plot).cluster_centers_
         log.debug("Locations are: \n %s", locations)
@@ -162,8 +162,8 @@ class Engine:
         clusters = self.kmeans(np.transpose(np.nonzero(mask)))
         log.debug("clusters: \n %s", clusters)
         log.debug(np.shape(clusters))
-        path = Paths(zip(clusters[:, 1], clusters[:, 0]))
-        x_locations, y_locations = path.iterate()
+        path = Paths(clusters)
+        y_locations, x_locations = path.iterate()
         log.debug("x: %s", x_locations)
         log.debug("y: %s", y_locations)
         for i, (j, k) in enumerate(zip(x_locations, y_locations)):
