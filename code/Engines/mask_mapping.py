@@ -2,11 +2,13 @@
 """
 
 import sys
+import math
 import logging as log
 import numpy as np
 import rope
 from sklearn.cluster import MiniBatchKMeans
 from scipy import spatial
+import joblib
 from Engines.path_finding import Paths
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -21,7 +23,7 @@ class Path:
             points {[type]} -- (y,x)
             mask {[type]} -- [description]
         """
-        self.MASK_WEIGHT = 5
+        self.MASK_WEIGHT = 40
         self.points = points
         self.mask = mask
 
@@ -35,89 +37,154 @@ class Path:
             return np.flip(mask, axis=0)
         return mask
 
-    def mask_distance(self, p1, p2):
+    def mask_distance(self, p1, p2, mask):
         """[summary]
 
         Arguments:
             p1 {[type]} -- [description]
             p2 {[type]} -- [description]
         """
-        if p1 == p2:
-            return (-255*4000)
         x_diff = abs(p1[1]-p2[1])
         y_diff = abs(p1[0]-p2[0])
         if y_diff > x_diff:
             mask = mask.T
-            x1 = p1[0]
-            y1 = p1[1]
-            x2 = p2[0]
-            y2 = p2[1]
+            x1 = int(p1[0])
+            y1 = int(p1[1])
+            x2 = int(p2[0])
+            y2 = int(p2[1])
             x_diff = abs(p1[0]-p2[0])
             y_diff = abs(p1[1]-p2[1])
         else:
-            y1 = p1[0]
-            x1 = p1[1]
-            y2 = p2[0]
-            x2 = p2[1]
-        mask = flip_x(x1, x2, flip_y(y1, y2, np.copy(self.mask)))
+            y1 = int(p1[0])
+            x1 = int(p1[1])
+            y2 = int(p2[0])
+            x2 = int(p2[1])
+        mask = self.flip_x(x1, x2, self.flip_y(y1, y2, np.copy(self.mask)))
         x_len = len(mask[0])
         mask_flat = np.ravel(mask)
         total = 0
-        for i in range(0, round(x_diff/y_diff)):
-            values = mask_flat[y1*x_len+x1+i:y2*x_len+1+i:x_len+1]
-            log.debug("Mask Values on iter %s: \n %s", i, values)
+        if y_diff == 0:
+            values = mask_flat[y1*x_len+x1:y2*x_len+1:1]
             total += np.sum(values)
+        elif x_diff == 0:
+            values = mask_flat[y1*x_len+x1:y2*x_len+1:x_len]
+            total += np.sum(values)
+        else:
+            for i in range(0, int(x_diff/y_diff)):
+                values = mask_flat[y1*x_len+x1+i:y2*x_len+1+i:x_len+1]
+                log.debug("Mask Values on iter %s: \n %s", i, values)
+                total += np.sum(values)
         return total
-
-    def algorithm(self, start, new, search_space):
+    
+    def algorithm_loop(self, start, new, search_space):
+        log.debug("new: \n %s", new)
         if search_space.any():
+            log.debug("Start: %s", start)
             distances = np.linalg.norm(search_space-start, axis=1)
+            log.debug("distances: \n %s", distances)
             mask_values = np.apply_along_axis(
                 self.mask_distance,
                 1,
                 search_space,
-                start
+                start,
+                self.mask
             )
             # Mask returns 255 when detected space exsists
             # Inverting so returns 0 when line is all in mask
             # Adjusting to resonable scale
             mask_distance = abs(mask_values - 255)/255
+            log.debug("masks:\n %s", mask_distance)
             # Assigning a weight based on how far apart the points
             # are and the time spend outside mask
-            total_weighted_distance = distances+self.MASK_WEIGHT*mask_distance
+            total_weighted_distance = distances+np.exp2(mask_distance*(1/self.MASK_WEIGHT))
+            log.debug("total: \n %s", total_weighted_distance)
             index = np.argmin(total_weighted_distance)
+            log.debug("index: %s", index)
             new = np.append(
                 new,
                 [[search_space[index], total_weighted_distance[index]]],
                 axis=0
             )
-            to_return = self.algorithm(
+            to_return = self.algorithm_loop(
                 search_space[index],
                 new,
                 np.delete(search_space, index, 0)
             )
             return to_return
         else:
-            return (np.sum([:, 1]), new)
+            return [np.sum(new[:, 1]), new]
 
-    def iterate(self):
-        possibile_paths = [None for _ in range(len(self.points))]
-        path_lengths = np.copy(possibile_paths)
-        for i, point in enumerate(self.points):
-            new = np.array([[self.points, 0]])
-            path_lengths[i], possibile_paths[i] = self.algorithm(
-                point,
-                new,
-                np.delete(self.points, i, 0)
+    def algorithm(self, start):
+        return self.algorithm_loop(start, np.array([[start, 0]]), np.copy(self.points))
+
+    def get_value(self, arr):
+        return arr[0]
+
+    def iterate(self, rope_loc):
+        if rope_loc is not None:
+            return self.iterate_new(rope_loc)
+        # possibile_paths = [None for _ in range(len(self.points))]
+        # path_lengths = np.copy(possibile_paths)
+        log.info("starting for loop")
+        possibile_paths = joblib.Parallel(
+            n_jobs=8
+        )(map(
+            joblib.delayed(self.algorithm),
+            np.copy(self.points)
             )
-        index = np.argmin(path_lengths)
+        )
+        # for i, point in enumerate(self.points):
+        #     log.info(i)
+        #     new = np.array([[point, 0]])
+        #     path_lengths[i], possibile_paths[i] = self.algorithm_loop(
+        #         point,
+        #         new,
+        #         np.delete(self.points, i, 0)
+        #     )
+        log.info("loop ended")
+        x = np.apply_along_axis(self.get_value, 1, possibile_paths)
+        index = np.argmin(x)
         x_values = []
         y_values = []
         # TODO This should be able to be done using np.apply_along_axis for
         # speed up
-        for best in possibile_paths[index]:
-            x_values.append(best[0])
-            y_values.append(best[1])
+        log.debug("paths : \n %s", possibile_paths[index][1])
+        for best in possibile_paths[index][1]:
+            log.debug("best : \n %s", best)
+            x_values.append(best[0][0])
+            y_values.append(best[0][1])
+        return (x_values, y_values)
+
+    def iterate_new(self, rope_loc):
+        log.info("Getting previous starting value")
+        rope_xy = [rope_loc[0][0], rope_loc[0][1]]
+        log.debug("xy: %s", rope_xy)
+        closest_point1 = np.linalg.norm(self.points-rope_xy, axis=1)
+        index = np.argmin(closest_point1)
+        possibile_path1 = self.algorithm(self.points[index])
+        log.info("One run")
+        x_only = rope_loc[:,0]
+        index = np.argmax(abs(x_only-900))
+        log.info(x_only)
+        rope_xy = [rope_loc[index][0], rope_loc[index][1]]
+        closest_point2 = np.linalg.norm(self.points-rope_xy, axis=1)
+        index = np.argmin(closest_point2)
+        possibile_path2 = self.algorithm(self.points[index])
+        log.info("Run 2 done")
+        log.info("d1: %s, d2: %s", possibile_path2[0], possibile_path1[0])
+        if possibile_path1[0]< possibile_path2[0]:
+            possibile_path = possibile_path1
+        else:
+            possibile_path = possibile_path2
+        x_values = []
+        y_values = []
+        # TODO This should be able to be done using np.apply_along_axis for
+        # speed up
+        log.debug("paths : \n %s", possibile_path[1])
+        for best in possibile_path[1]:
+            log.debug("best : \n %s", best)
+            x_values.append(best[0][0])
+            y_values.append(best[0][1])
         return (x_values, y_values)
         # np.apply_along_axis(self.algorithm, 1, new, [])
 
@@ -128,6 +195,7 @@ class Engine:
 
     def __init__(self):
         self.rope = rope.Rope()
+        self.first = True
         self.lace = None
 
     def kmeans(self, plot):
@@ -145,20 +213,11 @@ class Engine:
         locations = MiniBatchKMeans(
             n_clusters=self.rope.NO_NODES,
             init='k-means++',
-            batch_size=int(self.rope.NO_NODES/3),
+            batch_size=int(self.rope.NO_NODES/3)+5,
             compute_labels=False
         ).fit(plot).cluster_centers_
         log.debug("Locations are: \n %s", locations)
         return locations
-
-    # def run(self, edges, mask):
-    #     """[summary]
-
-    #     Arguments:
-    #         edges {[type]} -- [description]
-    #         mask {[type]} -- [description]
-    #     """
-    #     clusters = self.kmeans(mask)
 
     def nearestneighbours(self, plot, points, k):
         """Find the nearest point to another from a point map
@@ -217,33 +276,6 @@ class Engine:
             )
         return out  # Return the midpoints of each point
 
-    # def locate_y(self, arr):
-    #     """Find the y value associated with nonzero value a
-
-    #     Arguments:
-    #         a {np.array} -- [x y] of the index of the needed y value within
-    #                      self.lace
-
-    #     Returns:
-    #         [tuple] -- (x,y) of the location within frame of the point
-    #     """
-
-    #     y_location = self.lace[arr[0], arr[1]]
-    #     return (arr[1], y_location)
-
-    # def locate_x(self, arr):
-    #     """Find the x value associated with nonzero value a
-
-    #     Arguments:
-    #         a {np.array} -- [x y] of the index of the needed x value within
-    #                      self.lace
-
-    #     Returns:
-    #         [tuple] -- (x,y) of the location within frame of the point
-    #     """
-    #     x_location = self.lace[arr[0], arr[1]]
-    #     return (x_location, arr[0])
-
     def run(self, mask):
         """ Used to run the processing on images
 
@@ -253,35 +285,24 @@ class Engine:
         Returns:
             Rope -- full upadated rope obkect
         """
-        # self.lace = np.apply_along_axis(self.get_points, 0, edges)
-        # shoelace = np.nonzero(self.lace)  # Remove padded 0's
-        # combined_y = np.apply_along_axis(
-        #     self.locate_y,
-        #     1,
-        #     np.transpose(shoelace)
-        #     )
-        # self.lace = np.apply_along_axis(self.get_points, 1, edges)
-        # # * Transpose lace so that non-zero acts on the right axis.
-        # * Transpose shoelace so that the points are outputs in array of [yx]
-        # shoelace = np.nonzero(self.lace)
-        # combined_x = np.apply_along_axis(
-        #     self.locate_x,
-        #     1,
-        #     np.transpose(shoelace)
-        #     )
-        # combined = np.concatenate((combined_x, combined_y))
+        log.debug(self.rope.lace)
         clusters = self.kmeans(np.transpose(np.nonzero(mask)))
         log.debug("clusters: \n %s", clusters)
         log.debug(np.shape(clusters))
-        path = Paths(clusters)
-        y_locations, x_locations = path.iterate()
+        path = Path(clusters, mask)
+        if self.first:
+            y_locations, x_locations = path.iterate(None)
+            self.first = False
+        else:
+            y_locations, x_locations = path.iterate(self.rope.lace)
         log.debug("x: %s", x_locations)
         log.debug("y: %s", y_locations)
         for i, (j, k) in enumerate(zip(x_locations, y_locations)):
-            self.rope.lace[i] = np.array([
-                int(j),
-                int(k),
-                self.rope.lace[i][2]
-                ])
+            if i > 0:
+                self.rope.lace[i-1] = np.array([
+                    int(j),
+                    int(k),
+                    self.rope.lace[i-1][2]
+                    ])
         log.debug("rope: %s", self.rope.lace)
         return self.rope

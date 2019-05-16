@@ -29,9 +29,9 @@ def from_video(cap, out=None):
             (int(cap.get(3)), int(cap.get(4)))
             )
     vid = video.Video(cap, out)
-    start = time.perf_counter()
     ret = 1
     while(vid.cap.isOpened and ret == 1):
+        start = time.perf_counter()
         log.info("frame: %s", frame)
         ret = vid.shoelace_finding(frame)
         log.info(ret)
@@ -42,7 +42,7 @@ def from_video(cap, out=None):
         frame += 1
         end = time.perf_counter()
         log.info("Current Total time is %s resulting in frame rate of %s",
-                 end-start, frame/(end-start)
+                 end-start, 1/(end-start)
                  )
     cap.release()
     cv2.destroyAllWindows()
