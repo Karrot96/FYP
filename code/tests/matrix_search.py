@@ -2,11 +2,12 @@ import numpy as np
 import math
 import csv
 import timeit
+from scipy.optimize import linear_sum_assignment
 
 
 def make_data():
-    org = np.random.randint(5000, size=(100, 2))
-    new = np.random.randint(5000, size=(100, 2))
+    org = np.random.randint(5000, size=(CONST, 2))
+    new = np.random.randint(5000, size=(CONST, 2))
     arr = []
     # ranges = []
     for i,j in enumerate(org):
@@ -15,6 +16,7 @@ def make_data():
     # print(arr)  
     # print(ranges)
     arr = np.array(arr)
+    row_ind, col_ind = linear_sum_assignment(arr)
     return arr
 
 def loop(data, mean, arr):
@@ -89,9 +91,9 @@ def exhaustive(arr):
         if my_sum < best_sum:
             best_sum = my_sum
             best = j
-    # print(best_sum)
+    #print(best_sum)
     # print("exhaustive: ", combs[best])
-    return combs[best]
+    return combs[best], best_sum
                    
              
                
@@ -167,6 +169,50 @@ def my_sort():
     return best - best_sum, contained
     # print(results)
 
+def hungarian_method(arr):
+    sorted_arg_mins = []
+    
+    for i in arr:
+        sorted_arg_mins.append(np.argsort(i, kind='mergesort'))
+    sort = np.transpose(sorted_arg_mins)
+    arr1 = np.copy(arr)
+    for i, j in enumerate(sort[0]):
+        arr1[i] = arr[i] - arr[i][j]
+    output = []
+    fin = True
+    for i,j in enumerate(arr1):
+        min_val = np.argmin(j)
+        if arr1[i][min_val]==0:
+            output.append(min_val)
+        else:
+            fin = False     
+    l = np.arange(3)
+    print("l: ",l)
+    if not (np.sum(output) == np.sum(l)):
+        fin = False 
+    if not fin:
+        arr2 = np.transpose(np.copy(arr1))
+        print (arr2)
+        for i, j in enumerate(sort[0]):
+            arr2[i] = arr2[i] - arr2[i][j]
+        output = []
+        fin = True
+        for i,j in enumerate(arr2):
+            min_val = np.argmin(j)
+            if arr2[i][min_val]==0:
+                output.append(min_val)
+            else:
+                fin = False     
+        l = np.arange(3)
+        print("l: ", l)
+        print("arr2: ", arr2)
+        if not (np.sum(output) == np.sum(l)):
+            fin = False
+    print(arr)
+    print(arr1)   
+    print(fin)
+    print(output)     
+
 
 with open('test_data_matrix10000.csv', 'w') as csvFile:
     writer = csv.writer(csvFile)
@@ -179,10 +225,46 @@ with open('test_data_matrix10000.csv', 'w') as csvFile:
         for i in range(20):
             CONST = (i+1)*10
             print(CONST)
-            data.append(timeit.timeit("new_sort()", setup="from __main__ import new_sort",number=10000))
+            data.append(timeit.timeit("make_data()", setup="from __main__ import make_data",number=100))
         data_all.append(data)
     print(data_all)
     writer.writerows(data_all)
+
+
+print(timeit.timeit("make_data()", setup="from __main__ import make_data",number=100))
+# c = 0
+# for _ in range(10000):
+#     arr = np.array(make_data())
+#     correct, best_sum = exhaustive(arr)
+#     row_ind, col_ind = linear_sum_assignment(arr)
+#     total=0
+#     for i,j in enumerate(col_ind):
+#         if i*3+j in correct:
+#             total+=1
+#     if total == 3:
+#         c+=1
+#     else:
+#         if best_sum == arr[row_ind, col_ind].sum():
+#             c+=1
+#         else:
+#             print("best: ", best_sum)
+#             print("scipy: ", arr[row_ind, col_ind].sum())
+# print(c)
+# with open('test_data_matrix10000.csv', 'w') as csvFile:
+#     writer = csv.writer(csvFile)
+#     data_all = []
+#     data = list(range(1,21))
+#     data_all.append(data)
+#     print(data)
+#     for _ in range(3):
+#         data = []
+#         for i in range(20):
+#             CONST = (i+1)*10
+#             print(CONST)
+#             data.append(timeit.timeit("new_sort()", setup="from __main__ import new_sort",number=10000))
+#         data_all.append(data)
+#     print(data_all)
+#     writer.writerows(data_all)
 # total = 0
 # for i in range(10000):
 #     print(i)
