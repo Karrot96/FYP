@@ -23,7 +23,7 @@ class Path:
             points {[type]} -- (y,x)
             mask {[type]} -- [description]
         """
-        self.MASK_WEIGHT = 0
+        self.MASK_WEIGHT = 1
         self.points = points
         self.mask = mask
 
@@ -39,7 +39,6 @@ class Path:
 
     def mask_distance(self, p1, p2, mask):
         """[summary]
-
         Arguments:
             p1 {[type]} -- [description]
             p2 {[type]} -- [description]
@@ -75,7 +74,7 @@ class Path:
                 log.debug("Mask Values on iter %s: \n %s", i, values)
                 total += np.sum(values)
         return total
-    
+
     def algorithm_loop(self, start, new, search_space):
         log.debug("new: \n %s", new)
         if search_space.any():
@@ -96,7 +95,7 @@ class Path:
             log.debug("masks:\n %s", mask_distance)
             # Assigning a weight based on how far apart the points
             # are and the time spend outside mask
-            total_weighted_distance = distances+np.exp2(mask_distance*(1/self.MASK_WEIGHT))
+            total_weighted_distance = distances
             log.debug("total: \n %s", total_weighted_distance)
             index = np.argmin(total_weighted_distance)
             log.debug("index: %s", index)
@@ -119,67 +118,69 @@ class Path:
 
     def get_value(self, arr):
         return arr[0]
-    
-    def loop(data, mean, arr):
-    for i in range(len(arr)):
-        # print("i: ", i)
-        total = 0
-        locs = []
-        # print(data[0])
-        for k, j in enumerate(data[0]):
-            # print("j: ", j)
-            if j == i:
-                total += 1
-                locs.append(k)
-        if total > 1:
-            best_val = -1
-            # print(locs)
-            for l in locs:
-                val = abs(mean[l]-arr[l][i])
-                # print(val)
-                if val > best_val:
-                    best_val = abs(mean[l]-arr[l][i])
-                    best = l
-                # print("best: ", best)
-            for n, m in enumerate(data[0]):
-                if n in locs and not (n == best):
-                    data[0][n] = i+1
-        # print("data[0]: ", data[0])
-    return data
 
-    def new_sort(rope_loc):
+    def loop(self, data, mean, arr):
+        for i in range(len(arr)):
+            # print("i: ", i)
+            total = 0
+            locs = []
+            # print(data[0])
+            for k, j in enumerate(data[0]):
+                # print("j: ", j)
+                if j == i:
+                    total += 1
+                    locs.append(k)
+            if total > 1:
+                best_val = -1
+                # print(locs)
+                for l in locs:
+                    val = abs(mean[l]-arr[l][i])
+                    # print(val)
+                    if val > best_val:
+                        best_val = abs(mean[l]-arr[l][i])
+                        best = l
+                    # print("best: ", best)
+                for n, m in enumerate(data[0]):
+                    if n in locs and not (n == best):
+                        data[0][n] = i+1
+        # print("data[0]: ", data[0])
+        return data
+
+    def new_sort(self, rope_loc):
         new = self.points
-        org = rope_loc[:,:2]
+        log.info("points: \n %s", self.points)
+        org = np.flip(rope_loc[:,:2], axis=1)
+        log.info("org: \n %s", org)
         arr = []
-        # ranges = []
-        for i,j in enumerate(org):
+        for i, j in enumerate(org):
             values = np.linalg.norm(new-j, axis=1)
             arr.append(values)
         arr = np.array(arr)
+        log.info(arr)
         sorted_arg_mins = []
         for i in arr:
             sorted_arg_mins.append(np.argsort(i, kind='mergesort'))
-        # print(sorted_arg_mins)
+        log.info("Sorted args :\n %s", sorted_arg_mins)
         data = np.transpose(sorted_arg_mins)
         # print(data)
         mean = np.mean(arr, axis=1)
-        count = 0
         while (not (len(np.unique(data[0])) == len(data[0])) or np.max(data[0]) >= len(data[0])):
-            data = loop(data, mean, arr)
+            data = self.loop(data, mean, arr)
             data = np.where(data >= len(data[0]), 0, data)
-        rope_order = []
-        for j in data[0]:
-            rope_order.append(self.points[j])
+        log.info("data: %s", data[0])
+        rope_order = [None] * len(data)
+        for i,j in enumerate(data[0]):
+            rope_order[i]=(self.points[j])
         log.info("rope_order: \n %s", rope_order)
         return rope_order
-    
+
     def iterate(self, rope_loc):
-        if rope_loc is not None:
+        if rope_loc is None:
             return self.iterate_new(rope_loc)
         # possibile_paths = [None for _ in range(len(self.points))]
-        # path_lengths = np.copy(possibile_paths)  
+        # path_lengths = np.copy(possibile_paths)
         log.info("starting for loop")
-        path_ordered = new_sort(rope_loc)
+        path_ordered = self.new_sort(rope_loc)
         log.info("loop ended")
         x_values = []
         y_values = []
@@ -188,37 +189,37 @@ class Path:
         log.debug("paths : \n %s", path_ordered)
         for best in path_ordered:
             log.debug("best : \n %s", best)
-            x_values.append(best[0][0])
-            y_values.append(best[0][1])
+            x_values.append(best[0])
+            y_values.append(best[1])
         return (x_values, y_values)
 
     def iterate_new(self, rope_loc):
-        log.info("Getting previous starting value")
-        rope_xy = [rope_loc[0][0], rope_loc[0][1]]
-        log.debug("xy: %s", rope_xy)
-        closest_point1 = np.linalg.norm(self.points-rope_xy, axis=1)
-        index = np.argmin(closest_point1)
-        possibile_path1 = self.algorithm(self.points[index])
-        log.info("One run")
-        x_only = rope_loc[:,0]
-        index = np.argmax(abs(x_only-900))
-        log.info(x_only)
-        rope_xy = [rope_loc[index][0], rope_loc[index][1]]
-        closest_point2 = np.linalg.norm(self.points-rope_xy, axis=1)
-        index = np.argmin(closest_point2)
-        possibile_path2 = self.algorithm(self.points[index])
-        log.info("Run 2 done")
-        log.info("d1: %s, d2: %s", possibile_path2[0], possibile_path1[0])
-        if possibile_path1[0] < possibile_path2[0]:
-            possibile_path = possibile_path1
-        else:
-            possibile_path = possibile_path2
+        log.info("starting for loop")
+        log.info("points: \n %s", self.points)
+        possibile_paths = joblib.Parallel(
+            n_jobs=8
+        )(map(
+            joblib.delayed(self.algorithm),
+            np.copy(self.points)
+            )
+        )
+        # for i, point in enumerate(self.points):
+        #     log.info(i)
+        #     new = np.array([[point, 0]])
+        #     path_lengths[i], possibile_paths[i] = self.algorithm_loop(
+        #         point,
+        #         new,
+        #         np.delete(self.points, i, 0)
+        #     )
+        log.info("loop ended")
+        x = np.apply_along_axis(self.get_value, 1, possibile_paths)
+        index = np.argmin(x)
         x_values = []
         y_values = []
         # TODO This should be able to be done using np.apply_along_axis for
         # speed up
-        log.debug("paths : \n %s", possibile_path[1])
-        for best in possibile_path[1]:
+        log.debug("paths : \n %s", possibile_paths[index][1])
+        for best in possibile_paths[index][1]:
             log.debug("best : \n %s", best)
             x_values.append(best[0][0])
             y_values.append(best[0][1])
@@ -242,14 +243,22 @@ class Engine:
                                 points
             points {tuple} -- (x,y) of the point to be found within the plot
             k {int} -- The number of the closest point to be returned
-
         Returns:
             int -- index of the closest point within plot
         """
+        if self.first:
+            locations = MiniBatchKMeans(
+                n_clusters=self.rope.NO_NODES,
+                init='k-means++',
+                batch_size=int(self.rope.NO_NODES/3)+5,
+                compute_labels=False
+            ).fit(plot).cluster_centers_
+            log.debug("Locations are: \n %s", locations)
+            return locations
         # ! kmeans++ should probably be changed to the rope.lace
         locations = MiniBatchKMeans(
             n_clusters=self.rope.NO_NODES,
-            init=last,
+            init='k-means++',
             batch_size=int(self.rope.NO_NODES/3)+5,
             compute_labels=False
         ).fit(plot).cluster_centers_
@@ -277,14 +286,11 @@ class Engine:
     def adjusted_mean(self, arr):
         """Checks to make sure points are close enough together to be
         considered parts of a string
-
         Arguments:
             arr {np.array} -- [2 points in an array to have mean found of]
-
         Returns:
             [float] -- [The mean of 2 points]
         """
-
         if arr[1]-arr[0] < 100:
             return np.mean(arr)
         else:
@@ -292,10 +298,8 @@ class Engine:
 
     def get_points(self, arr):
         """Returns the points of the shoelace by looking for edges
-
         Arguments:
             a {np.array} -- 1-D array of all points on a given pixel line
-
         Returns:
             np.array -- all non-zero points on a line
         """
@@ -315,20 +319,19 @@ class Engine:
 
     def run(self, mask):
         """ Used to run the processing on images
-
         Arguments:
             edges {np.array} -- Image in a greyscale format
-
         Returns:
             Rope -- full upadated rope obkect
         """
         log.debug(self.rope.lace)
-        rope_to_pass
-        clusters = self.kmeans(np.transpose(np.nonzero(mask)), self.rope.lace)
+        clusters = self.kmeans(np.transpose(np.nonzero(mask)), self.rope.lace[:,:2])
         log.debug("clusters: \n %s", clusters)
         log.debug(np.shape(clusters))
         path = Path(clusters, mask)
+        log.info("rope: \n %s", self.rope.lace[:,:2])
         if self.first:
+            log.info("none")
             y_locations, x_locations = path.iterate(None)
             self.first = False
         else:

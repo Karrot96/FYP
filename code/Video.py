@@ -1,6 +1,5 @@
 # TODO: Fill docstring
 """[summary]
-
 Returns:
     [type] -- [description]
 """
@@ -9,13 +8,12 @@ import logging as log
 import numpy as np
 import cv2
 import rope
-from Engines.mask_mapping import Engine
+from Engines.history import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 
 class Video:
     """Class handling the processing on the images
-
         Arguments:
             cap {cv2.VideoCapture} -- The video stream from the file or camera
             out {string} -- Output file for the video if being outputted
@@ -23,12 +21,10 @@ class Video:
 
     def __init__(self, cap, out):
         """Used to initialise the Video Class
-
         Arguments:
             cap {cv2.VideoCapture} -- The video stream from the file or camera
             out {string} -- Output file for the video if being outputted
         """
-
         log.info("Initialising Video Input")
         self.engine = Engine()
         self.cap = cap
@@ -38,7 +34,6 @@ class Video:
 
     def shoelace_finding(self, frame_no):
         """Find the location of the shoelace
-
         Arguments:
             None
         """
@@ -50,7 +45,7 @@ class Video:
             log.debug("Frame :%s, image resolution is: %s",
                       frame_no,
                       frame.shape
-                      )
+            )
             lower_yellow = np.array([220, 220, 220])
             upper_yellow = np.array([255, 255, 255])
             mask = cv2.inRange(frame, lower_yellow, upper_yellow)
@@ -69,7 +64,7 @@ class Video:
             log.debug("Frame :%s, Rope positions, %s",
                       frame_no,
                       self.rope.lace
-                      )
+            )
             return 1
         except Exception as e:
             log.error("Exception occurred: %s", e, exc_info=True)
