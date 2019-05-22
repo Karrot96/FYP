@@ -53,7 +53,7 @@ class Video:
             log.debug("Frame :%s, Edges \n: %s", frame_no, edges)
             # Engines
             log.info("Starting Engine Run")
-            self.rope = self.engine.run(mask)
+            self.rope = self.engine.run(edges)
             log.info("Engine Finished")
             frame = self.rope.draw_lace(frame)
             # cv2.imshow('edges', mask)

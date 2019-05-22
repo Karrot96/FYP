@@ -10,6 +10,7 @@ from sklearn.cluster import MiniBatchKMeans
 from scipy import spatial
 import joblib
 from Engines.path_finding import Paths
+from scipy.optimize import linear_sum_assignment
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -156,21 +157,24 @@ class Path:
             values = np.linalg.norm(new-j, axis=1)
             arr.append(values)
         arr = np.array(arr)
-        log.info(arr)
-        sorted_arg_mins = []
-        for i in arr:
-            sorted_arg_mins.append(np.argsort(i, kind='mergesort'))
-        log.info("Sorted args :\n %s", sorted_arg_mins)
-        data = np.transpose(sorted_arg_mins)
-        # print(data)
-        mean = np.mean(arr, axis=1)
-        while (not (len(np.unique(data[0])) == len(data[0])) or np.max(data[0]) >= len(data[0])):
-            data = self.loop(data, mean, arr)
-            data = np.where(data >= len(data[0]), 0, data)
-        log.info("data: %s", data[0])
-        rope_order = [None] * len(data)
-        for i,j in enumerate(data[0]):
-            rope_order[i]=(self.points[j])
+        # TODO insert here
+        row_ind, col_ind = linear_sum_assignment(arr)
+        
+        # log.info(arr)
+        # sorted_arg_mins = []
+        # for i in arr:
+        #     sorted_arg_mins.append(np.argsort(i, kind='mergesort'))
+        # log.info("Sorted args :\n %s", sorted_arg_mins)
+        # data = np.transpose(sorted_arg_mins)
+        # # print(data)
+        # mean = np.mean(arr, axis=1)
+        # while (not (len(np.unique(data[0])) == len(data[0])) or np.max(data[0]) >= len(data[0])):
+        #     data = self.loop(data, mean, arr)
+        #     data = np.where(data >= len(data[0]), 0, data)
+        # log.info("data: %s", data[0])
+        rope_order = [None] * len(col_ind)
+        for i,j in enumerate(col_ind):
+            rope_order[j]=(self.points[i])
         log.info("rope_order: \n %s", rope_order)
         return rope_order
 

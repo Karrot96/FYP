@@ -54,7 +54,7 @@ def new_sort():
     for i,j in enumerate(org):
         values = np.linalg.norm(new-j, axis=1)
         arr.append(values)
-    # print(arr)  
+    # print(arr)
     # print(ranges)
     arr = np.array(arr)
     sorted_arg_mins = []
