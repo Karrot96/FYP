@@ -249,10 +249,28 @@ class Engine:
             self.rope.find_lace(x_locations, y_locations)
             self.first = False
         else:
+            nodes = []
             for i in search_points:
                 search_space = np.array(self.rope.lace)
                 position, distanace = self.nearestneighbours(search_space[:, :2], i, 1)
                 if distanace > MOVE_THRESH:
-                    self.rope.implement_follow_the_leader(position, np.append(i, -1))
+                    nodes.append([position, np.append(i, -1)])
+            nodes = np.array(nodes)
+            log.info(nodes)
+            sorted_nodes = nodes[nodes[:,0].argsort()]
+            for i in range(len(sorted_nodes)-1):
+                begining = False
+                end = False
+                if i == 0:
+                    begining = True
+                if i == len(nodes)-2:
+                    end = True
+                self.rope.implement_follow_the_leader(sorted_nodes[i][0][0],
+                                                      sorted_nodes[i][1],
+                                                      begining,
+                                                      end,
+                                                      sorted_nodes[i+1][0][0],
+                                                      sorted_nodes[i+1][1]
+                )
         log.debug("Lace: \n %s", self.rope.lace)
         return self.rope

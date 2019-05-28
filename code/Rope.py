@@ -154,8 +154,8 @@ class Rope:
         return move
 
     def follow_the_leader_simple(self, move, node):
-        # log.info(move)
-        # log.info(node)
+        log.info(move)
+        log.info(node)
         newVector = node - move
         # log.info(newVector)
         divisor = np.absolute(newVector[np.argmax(np.absolute(newVector))])
@@ -163,29 +163,111 @@ class Rope:
         move = move+movementVector
         return self.follow_the_leader(move, movementVector, node)
 
-    def follow_the_leader_average(self, move1, move2, node1, node2):
-        new_vector_1 = node1 - move1
-        new_vector_2 = node2 - move2
-        divisor1 = np.absolute(new_vector1[np.argmax(np.absolute(new_vector1))])
-        divisor2 = np.absolute(new_vector2[np.argmax(np.absolute(new_vector2))])
+
     # This should be done recursively would be more efficient
-    def implement_follow_the_leader(self, node, position, begining, end, second=None, position_two=None):
+    def implement_follow_the_leader(self,
+                                    node,
+                                    position,
+                                    begining,
+                                    end,
+                                    second=None,
+                                    position_two=None
+                                    ):
+        log.info(node)
         if begining:
             log.debug("Node : %s, position: %s", node, position)
             originalNode = node
+            second_orig = second
             self.lace[node] = position
+            self.lace[second] = position_two
             while node > 0:
                 currentNode = node - 1
                 self.lace[currentNode] = self.follow_the_leader_simple(
-                    self.lace[currentNode][0],
-                    self.lace[node][0]
+                    self.lace[currentNode],
+                    self.lace[node]
                 )
                 node = currentNode
             node = originalNode
-            while node < len(self.lace)-1:
+            tmp_original = self.lace[originalNode:second_orig]
+            while second > node:
+                currentNode = second - 1
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode],
+                    self.lace[second]
+                )
+                second = currentNode
+            tmp_after_1 = self.lace[originalNode:second_orig]
+            self.lace[originalNode:second_orig] = tmp_original
+            node = originalNode
+            while node < second_orig:
+                currentNode = node+1
+                self.lace[currentNode] = self.follow_the_leader(
+                    self.lace[currentNode],
+                    self.lace[node]
+                )
+                node = currentNode
+            tmp_after_2 = self.lace[originalNode:second_orig]
+            averaged = np.average(list(zip(tmp_after_1, tmp_after_2)), axis=1)
+            self.lace[originalNode:second_orig] = averaged
+        elif end:
+            log.debug("Node : %s, position: %s", node, position)
+            originalNode = node
+            second_orig = second
+            self.lace[node] = position
+            self.lace[second] = position_two
+            while second < len(self.lace)-1:
+                currentNode = second + 1
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode][0],
+                    self.lace[second][0]
+                )
+                second = currentNode
+            second = second_orig
+            tmp_original = self.lace[originalNode:second_orig]
+            while second > node:
+                currentNode = second - 1
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode][0],
+                    self.lace[second][0]
+                )
+                second = currentNode
+            tmp_after_1 = self.lace[originalNode:second_orig]
+            self.lace[originalNode:second_orig] = tmp_original
+            node = originalNode
+            while node < second_orig:
                 currentNode = node+1
                 self.lace[currentNode] = self.follow_the_leader(
                     self.lace[currentNode][0],
                     self.lace[node][0]
                 )
                 node = currentNode
+            tmp_after_2 = self.lace[originalNode:second_orig]
+            averaged = np.average(list(zip(tmp_after_1, tmp_after_2)), axis=1)
+            self.lace[originalNode:second_orig] = averaged
+        else:
+            log.debug("Node : %s, position: %s", node, position)
+            originalNode = node
+            second_orig = second
+            self.lace[node] = position
+            self.lace[second] = position_two
+            tmp_original = self.lace[originalNode:second_orig]
+            while second > node:
+                currentNode = second - 1
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode][0],
+                    self.lace[second][0]
+                )
+                second = currentNode
+            tmp_after_1 = self.lace[originalNode:second_orig]
+            self.lace[originalNode:second_orig] = tmp_original
+            node = originalNode
+            while node < second_orig:
+                currentNode = node+1
+                self.lace[currentNode] = self.follow_the_leader(
+                    self.lace[currentNode][0],
+                    self.lace[node][0]
+                )
+                node = currentNode
+            tmp_after_2 = self.lace[originalNode:second_orig]
+            averaged = np.average(list(zip(tmp_after_1, tmp_after_2)), axis=1)
+            self.lace[originalNode:second_orig] = averaged
