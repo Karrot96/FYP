@@ -23,7 +23,12 @@ class Path:
         log.info("arr: \n %s", self.arr)
     
     def solve(self):
+        self.generate_array()
+        ordered = [None]*len(self.points)
         row_ind, col_ind = linear_sum_assignment(self.arr)
+        for i,j in enumerate(col_ind):
+            col_ind.inex(i)
+        
         log.info("connections: %s", col_ind)
     
 
