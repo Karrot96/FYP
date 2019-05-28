@@ -19,7 +19,6 @@ class Path:
     def generate_array(self):
         for i, j in enumerate(self.points):
             self.arr[i] = np.linalg.norm(self.points-j, axis=1)
-            self.arr[i][i] = 100000
         log.info("arr: \n %s", self.arr)
     
     def solve(self):
