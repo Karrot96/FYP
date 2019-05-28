@@ -12,7 +12,7 @@ from sklearn.cluster import KMeans
 from Engines.path_finding import Paths
 np.set_printoptions(threshold=sys.maxsize)
 
-
+ 
 class Engine:
     """Engine class for image processing - Kmeans version
     """
