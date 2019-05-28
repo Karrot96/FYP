@@ -3,17 +3,20 @@ import logging as log
 import numpy as np
 import rope
 from sklearn.cluster import KMeans
+from scipy import spatial
 np.set_printoptions(threshold=sys.maxsize)
+
+MOVE_THRESH = 20
 
 
 class ShortestPath:
-    
+
     def __init__(self, points):
         self.points = points
         self.total_distance = -1
         self.best = None
         log.debug("Points in ShortestPath Class: \n %s", self.points)
-    
+
     def reorder(self, points_remaining, start, new, first):
         """ Reorders the array to that of the shortest distanace between
         points given a certain starting point
@@ -40,6 +43,11 @@ class ShortestPath:
                 False
             )
         elif len(points_remaining) > 1:
+            log.debug(" %s: Number of points remaining \
+                      in ShortestPath reorder: %s",
+                      __name__,
+                      len(points_remaining)
+            )
             distances = np.linalg.norm(points_remaining-start, axis=1)
             index = np.argmin(distances)
             new = np.append(
@@ -98,11 +106,11 @@ class ShortestPath:
 
 
 class Points:
-    
+
     def __init__(self):
         self.points = None
         self.lace = None
-        
+
     def locate_y(self, arr):
         """Find the y value associated with nonzero value a
 
@@ -141,9 +149,9 @@ class Points:
         """
         non_zero = np.nonzero(arr)  # Get non-zero y values constituting edges
         first_non_zero = non_zero[0]
-        if first_non_zero.any():
-            log.debug("A:%s B:%s", len(arr), len(first_non_zero))
-            log.debug("Z:%s", first_non_zero)
+        # if first_non_zero.any():
+        #     log.debug("A:%s B:%s", len(arr), len(first_non_zero))
+        #     log.debug("Z:%s", first_non_zero)
         # Output array same size as input array so numpy doesnt complain
         out = np.pad(
             first_non_zero,
@@ -152,7 +160,7 @@ class Points:
             constant_values=(0, 0)
             )
         return out  # Return the midpoints of each point
-    
+
     def connected_dots(self, edges):
         self.lace = np.apply_along_axis(self.get_points, 0, edges)
         shoelace = np.nonzero(self.lace)  # Remove padded 0's
@@ -186,7 +194,25 @@ class Engine:
         self.rope = rope.Rope()
         self.first = True
         self.lace = None
-    
+
+    def nearestneighbours(self, plot, points, k):
+        """Find the nearest point to another from a point map
+
+        Arguments:
+            plot {2-D np.array} -- A collection of 2-D locations of all the points
+            points {tuple} -- (x,y) of the point to be found within the plot
+            k {int} -- The number of the closest point to be returned
+
+        Returns:
+            int -- index of the closest point within plot
+        """
+
+        tree = spatial.cKDTree(plot)
+        distance, indexes1 = tree.query(points, k=[k])
+        # log.info(distance)
+        # log.info(indexes1)
+        return indexes1, distance
+
     def kmeans(self, plot):
         """Make nodes through kmeans clustering
         Arguments:
@@ -205,7 +231,7 @@ class Engine:
             ).fit(plot).cluster_centers_
         log.debug("Locations are: \n %s", locations)
         return locations
-        
+
     def run(self, edges):
         points = Points()
         # Method
@@ -213,14 +239,20 @@ class Engine:
         points.connected_dots(edges)
         # Global method
         kmeans_data = points.points
+        search_points = self.kmeans(kmeans_data)
+        log.debug("search_points: \n %s", search_points)
         if self.first:
-            path = ShortestPath(kmeans_data)
-        x_locations, y_locations = path.iterate()
-        log.debug("x: %s", x_locations)
-        log.debug("y: %s", y_locations)
-        
-        #self.rope.new will containt the points of the shoelace nodes.
-        self.rope.find_lace(x_locations, y_locations)
-            
-        
-        
+            path = ShortestPath(search_points)
+            x_locations, y_locations = path.iterate()
+            # log.info("x: %s", x_locations)
+            # log.info("y: %s", y_locations)
+            self.rope.find_lace(x_locations, y_locations)
+            self.first = False
+        else:
+            for i in search_points:
+                search_space = np.array(self.rope.lace)
+                position, distanace = self.nearestneighbours(search_space[:, :2], i, 1)
+                if distanace > MOVE_THRESH:
+                    self.rope.implement_follow_the_leader(position, np.append(i, -1))
+        log.debug("Lace: \n %s", self.rope.lace)
+        return self.rope

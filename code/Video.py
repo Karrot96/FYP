@@ -8,7 +8,7 @@ import logging as log
 import numpy as np
 import cv2
 import rope
-from Engines.matrix_search_full import Engine
+from Engines.full_combined import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -50,7 +50,7 @@ class Video:
             upper_yellow = np.array([255, 255, 255])
             mask = cv2.inRange(frame, lower_yellow, upper_yellow)
             edges = cv2.Canny(mask, 50, 60)
-            log.debug("Frame :%s, Edges \n: %s", frame_no, edges)
+            # log.debug("Frame :%s, Edges \n: %s", frame_no, edges)
             # Engines
             log.info("Starting Engine Run")
             self.rope = self.engine.run(edges)

@@ -159,7 +159,7 @@ class Path:
         arr = np.array(arr)
         # TODO insert here
         row_ind, col_ind = linear_sum_assignment(arr)
-        
+    
         # log.info(arr)
         # sorted_arg_mins = []
         # for i in arr:

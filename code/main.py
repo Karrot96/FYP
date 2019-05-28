@@ -117,7 +117,7 @@ def video_input():
             log.debug("Debug turned on. Outputting to console")
         elif args.debug:
             log.basicConfig(
-                level=log.INFO,
+                level=log.DEBUG,
                 filename=args.debug,
                 filemode='w',
                 format='%(asctime)s, %(levelname)s , %(message)s'
