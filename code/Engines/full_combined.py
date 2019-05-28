@@ -244,8 +244,8 @@ class Engine:
         if self.first:
             path = ShortestPath(search_points)
             x_locations, y_locations = path.iterate()
-            # log.info("x: %s", x_locations)
-            # log.info("y: %s", y_locations)
+            # log.debug("x: %s", x_locations)
+            # log.debug("y: %s", y_locations)
             self.rope.find_lace(x_locations, y_locations)
             self.first = False
         else:
@@ -256,8 +256,17 @@ class Engine:
                 if distanace > MOVE_THRESH:
                     nodes.append([position, np.append(i, -1)])
             nodes = np.array(nodes)
-            log.info(nodes)
+            log.debug(nodes)
             sorted_nodes = nodes[nodes[:,0].argsort()]
+            length = len(sorted_nodes)-1
+            for j in range(length):
+                i = length-j
+                log.debug(i)
+                log.debug(sorted_nodes[i][0])
+                if sorted_nodes[i][0][0] == sorted_nodes[i-1][0][0]:
+                    log.debug(i)
+                    sorted_nodes = np.delete(sorted_nodes, (i), axis=0)
+            log.debug("Sorted_nodes: \n %s", sorted_nodes)
             for i in range(len(sorted_nodes)-1):
                 begining = False
                 end = False

@@ -133,9 +133,9 @@ class Rope:
                     adjusted_carry = carry
                     carry = 0
             carry = (distance - adjusted_carry) % self.DISTANCE_BETWEEN_NODES
-        # log.info(self.new)
+        # log.debug(self.new)
         self.lace = np.array(self.new)
-        # log.info(self.lace)
+        # log.debug(self.lace)
 
     def follow_the_leader(self, move, movementVector, node):
         x = math.sqrt(
@@ -154,10 +154,10 @@ class Rope:
         return move
 
     def follow_the_leader_simple(self, move, node):
-        log.info(move)
-        log.info(node)
+        log.debug(move)
+        log.debug(node)
         newVector = node - move
-        # log.info(newVector)
+        # log.debug(newVector)
         divisor = np.absolute(newVector[np.argmax(np.absolute(newVector))])
         movementVector = newVector / divisor
         move = move+movementVector
@@ -173,7 +173,7 @@ class Rope:
                                     second=None,
                                     position_two=None
                                     ):
-        log.info(node)
+        log.debug("node1: %s, Node2: %s", node, second)
         if begining:
             log.debug("Node : %s, position: %s", node, position)
             originalNode = node
@@ -201,7 +201,7 @@ class Rope:
             node = originalNode
             while node < second_orig:
                 currentNode = node+1
-                self.lace[currentNode] = self.follow_the_leader(
+                self.lace[currentNode] = self.follow_the_leader_simple(
                     self.lace[currentNode],
                     self.lace[node]
                 )
@@ -218,8 +218,8 @@ class Rope:
             while second < len(self.lace)-1:
                 currentNode = second + 1
                 self.lace[currentNode] = self.follow_the_leader_simple(
-                    self.lace[currentNode][0],
-                    self.lace[second][0]
+                    self.lace[currentNode],
+                    self.lace[second]
                 )
                 second = currentNode
             second = second_orig
@@ -227,8 +227,8 @@ class Rope:
             while second > node:
                 currentNode = second - 1
                 self.lace[currentNode] = self.follow_the_leader_simple(
-                    self.lace[currentNode][0],
-                    self.lace[second][0]
+                    self.lace[currentNode],
+                    self.lace[second]
                 )
                 second = currentNode
             tmp_after_1 = self.lace[originalNode:second_orig]
@@ -236,13 +236,15 @@ class Rope:
             node = originalNode
             while node < second_orig:
                 currentNode = node+1
-                self.lace[currentNode] = self.follow_the_leader(
-                    self.lace[currentNode][0],
-                    self.lace[node][0]
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode],
+                    self.lace[node]
                 )
                 node = currentNode
             tmp_after_2 = self.lace[originalNode:second_orig]
-            averaged = np.average(list(zip(tmp_after_1, tmp_after_2)), axis=1)
+            list_vals = list(zip(tmp_after_1, tmp_after_2))
+            log.debug("list: \n %s", list_vals)
+            averaged = np.average(list_vals, axis=1)
             self.lace[originalNode:second_orig] = averaged
         else:
             log.debug("Node : %s, position: %s", node, position)
@@ -254,8 +256,8 @@ class Rope:
             while second > node:
                 currentNode = second - 1
                 self.lace[currentNode] = self.follow_the_leader_simple(
-                    self.lace[currentNode][0],
-                    self.lace[second][0]
+                    self.lace[currentNode],
+                    self.lace[second]
                 )
                 second = currentNode
             tmp_after_1 = self.lace[originalNode:second_orig]
@@ -263,9 +265,9 @@ class Rope:
             node = originalNode
             while node < second_orig:
                 currentNode = node+1
-                self.lace[currentNode] = self.follow_the_leader(
-                    self.lace[currentNode][0],
-                    self.lace[node][0]
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode],
+                    self.lace[node]
                 )
                 node = currentNode
             tmp_after_2 = self.lace[originalNode:second_orig]
