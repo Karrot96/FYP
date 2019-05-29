@@ -265,7 +265,7 @@ class Engine:
                 new_row = []
                 new_col = []
                 for i, j in enumerate(row_ind):
-                    distance = np.linalg.norm(np.delete(self.rope.lace[j],2)-search_points[col_ind[i]], axis=1)
+                    distance = np.linalg.norm(np.delete(self.rope.lace[j],2)-search_points[col_ind[i]])
                     if distance < MOVE_THRESH_UPPER:
                         new_row.append(j)
                         new_col.append(col_ind[i])
