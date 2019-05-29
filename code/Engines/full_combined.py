@@ -6,7 +6,8 @@ from sklearn.cluster import KMeans
 from scipy import spatial
 np.set_printoptions(threshold=sys.maxsize)
 
-MOVE_THRESH = 20
+MOVE_THRESH_LOWER = 40
+MOVE_THRESH_UPPER = 300
 
 
 class ShortestPath:
@@ -252,11 +253,17 @@ class Engine:
             nodes = []
             for i in search_points:
                 search_space = np.array(self.rope.lace)
-                position, distanace = self.nearestneighbours(search_space[:, :2], i, 1)
-                if distanace > MOVE_THRESH:
+                position, distanace = self.nearestneighbours(
+                   search_space[:, :2],
+                    i,
+                    1
+                )
+                if distanace > MOVE_THRESH_LOWER and distanace < MOVE_THRESH_UPPER:
                     nodes.append([position, np.append(i, -1)])
             nodes = np.array(nodes)
-            log.debug(nodes)
+            if len(nodes)==0:
+                return self.rope
+            log.info(len(nodes))
             sorted_nodes = nodes[nodes[:,0].argsort()]
             length = len(sorted_nodes)-1
             for j in range(length):
