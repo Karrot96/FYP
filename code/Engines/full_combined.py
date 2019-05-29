@@ -8,7 +8,7 @@ from scipy.optimize import linear_sum_assignment
 np.set_printoptions(threshold=sys.maxsize)
 
 MOVE_THRESH_LOWER = 0
-MOVE_THRESH_UPPER = 300
+MOVE_THRESH_UPPER = 150
 
 
 class ShortestPath:
@@ -253,6 +253,7 @@ class Engine:
         else:
             nodes = []
             # TODO Hungarian could be used to perform matching
+            # Good but not perfect - better way of ignoring erronous points would be beneficial
             hungarian = True
             if hungarian:
                 for i in self.rope.lace:
