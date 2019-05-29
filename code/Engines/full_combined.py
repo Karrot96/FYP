@@ -4,6 +4,7 @@ import numpy as np
 import rope
 from sklearn.cluster import KMeans
 from scipy import spatial
+from scipy.optimize import linear_sum_assignment
 np.set_printoptions(threshold=sys.maxsize)
 
 MOVE_THRESH_LOWER = 40
@@ -251,42 +252,59 @@ class Engine:
             self.first = False
         else:
             nodes = []
-            for i in search_points:
-                search_space = np.array(self.rope.lace)
-                position, distanace = self.nearestneighbours(
-                   search_space[:, :2],
-                    i,
-                    1
-                )
-                if distanace > MOVE_THRESH_LOWER and distanace < MOVE_THRESH_UPPER:
-                    nodes.append([position, np.append(i, -1)])
-            nodes = np.array(nodes)
-            if len(nodes)==0:
-                return self.rope
-            log.info(len(nodes))
-            sorted_nodes = nodes[nodes[:,0].argsort()]
-            length = len(sorted_nodes)-1
-            for j in range(length):
-                i = length-j
-                log.debug(i)
-                log.debug(sorted_nodes[i][0])
-                if sorted_nodes[i][0][0] == sorted_nodes[i-1][0][0]:
+            # TODO Hungarian could be used to perform matching
+            hungarian = True
+            if hungarian:
+                for i in self.rope.lace:
+                    nodes.append(search_points-i)
+                log.info("nodes space : %s", np.shape(nodes))
+                row_ind, col_ind = linear_sum_assignment(nodes)
+                for i in range(len(row_ind)-1):
+                    begining = False
+                    end = False
+                    if i == 0:
+                        begining = True
+                    if i == len(row_ind)-2:
+                        end = True
+                    self.rope.implement_follow_the_leader(row_ind[i],
+                                                          search_points[col_ind[i]],
+                                                          begining,
+                                                          end,
+                                                          row_ind[i+1],
+                                                          search_points[col_ind[i+1]]
+                    )
+                    
+            else:
+                for i in search_points:
+                    search_space = np.array(self.rope.lace)
+                    position, distanace = self.nearestneighbours(search_space[:, :2], i, 1)
+                    if distanace > MOVE_THRESH:
+                        nodes.append([position, np.append(i, -1)])
+                nodes = np.array(nodes)
+                log.debug(nodes)
+                sorted_nodes = nodes[nodes[:,0].argsort()]
+                length = len(sorted_nodes)-1
+                for j in range(length):
+                    i = length-j
                     log.debug(i)
-                    sorted_nodes = np.delete(sorted_nodes, (i), axis=0)
-            log.debug("Sorted_nodes: \n %s", sorted_nodes)
-            for i in range(len(sorted_nodes)-1):
-                begining = False
-                end = False
-                if i == 0:
-                    begining = True
-                if i == len(nodes)-2:
-                    end = True
-                self.rope.implement_follow_the_leader(sorted_nodes[i][0][0],
-                                                      sorted_nodes[i][1],
-                                                      begining,
-                                                      end,
-                                                      sorted_nodes[i+1][0][0],
-                                                      sorted_nodes[i+1][1]
-                )
-        log.debug("Lace: \n %s", self.rope.lace)
+                    log.debug(sorted_nodes[i][0])
+                    if sorted_nodes[i][0][0] == sorted_nodes[i-1][0][0]:
+                        log.debug(i)
+                        sorted_nodes = np.delete(sorted_nodes, (i), axis=0)
+                log.debug("Sorted_nodes: \n %s", sorted_nodes)
+                for i in range(len(sorted_nodes)-1):
+                    begining = False
+                    end = False
+                    if i == 0:
+                        begining = True
+                    if i == len(nodes)-2:
+                        end = True
+                    self.rope.implement_follow_the_leader(sorted_nodes[i][0][0],
+                                                        sorted_nodes[i][1],
+                                                        begining,
+                                                        end,
+                                                        sorted_nodes[i+1][0][0],
+                                                        sorted_nodes[i+1][1]
+                    )
+            log.debug("Lace: \n %s", self.rope.lace)
         return self.rope
