@@ -21,7 +21,7 @@ class Rope:
     # lace is shape (x,y,z)
     lace = np.zeros((NO_NODES, 3))
     new = []
-    DISTANCE_BETWEEN_NODES = 25
+    DISTANCE_BETWEEN_NODES = 10
 
     def __init__(self):
         """Rope object to store actual data nd physics model of the shoelace

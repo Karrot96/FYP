@@ -7,7 +7,7 @@ from scipy import spatial
 from scipy.optimize import linear_sum_assignment
 np.set_printoptions(threshold=sys.maxsize)
 
-MOVE_THRESH_LOWER = 40
+MOVE_THRESH_LOWER = 0
 MOVE_THRESH_UPPER = 300
 
 
@@ -256,8 +256,11 @@ class Engine:
             hungarian = True
             if hungarian:
                 for i in self.rope.lace:
-                    nodes.append(search_points-i)
-                log.info("nodes space : %s", np.shape(nodes))
+                    j = np.delete(i,2)
+                    log.info(j)
+                    value = np.linalg.norm(search_points-j, axis=1)
+                    nodes.append(value)
+                # log.info("nodes space : %s", np.shape(nodes))
                 row_ind, col_ind = linear_sum_assignment(nodes)
                 for i in range(len(row_ind)-1):
                     begining = False
@@ -266,12 +269,15 @@ class Engine:
                         begining = True
                     if i == len(row_ind)-2:
                         end = True
+                    # log.info(search_points[col_ind[i]])
+                    # log.info(search_points[col_ind[i+1]])
+                    # log.info("done")
                     self.rope.implement_follow_the_leader(row_ind[i],
-                                                          search_points[col_ind[i]],
+                                                          np.append(search_points[col_ind[i]], -1),
                                                           begining,
                                                           end,
                                                           row_ind[i+1],
-                                                          search_points[col_ind[i+1]]
+                                                          np.append(search_points[col_ind[i+1]], -1)
                     )
                     
             else:
