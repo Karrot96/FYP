@@ -257,27 +257,34 @@ class Engine:
             if hungarian:
                 for i in self.rope.lace:
                     j = np.delete(i,2)
-                    log.info(j)
+                    # log.info(j)
                     value = np.linalg.norm(search_points-j, axis=1)
                     nodes.append(value)
                 # log.info("nodes space : %s", np.shape(nodes))
                 row_ind, col_ind = linear_sum_assignment(nodes)
-                for i in range(len(row_ind)-1):
+                new_row = []
+                new_col = []
+                for i, j in enumerate(row_ind):
+                    distance = np.linalg.norm(np.delete(self.rope.lace[j],2)-search_points[col_ind[i]], axis=1)
+                    if distance < MOVE_THRESH_UPPER:
+                        new_row.append(j)
+                        new_col.append(col_ind[i])
+                for i in range(len(new_row)-1):
                     begining = False
                     end = False
                     if i == 0:
                         begining = True
-                    if i == len(row_ind)-2:
+                    if i == len(new_row)-2:
                         end = True
                     # log.info(search_points[col_ind[i]])
                     # log.info(search_points[col_ind[i+1]])
                     # log.info("done")
-                    self.rope.implement_follow_the_leader(row_ind[i],
-                                                          np.append(search_points[col_ind[i]], -1),
+                    self.rope.implement_follow_the_leader(new_row[i],
+                                                          np.append(search_points[new_col[i]], -1),
                                                           begining,
                                                           end,
-                                                          row_ind[i+1],
-                                                          np.append(search_points[col_ind[i+1]], -1)
+                                                          new_row[i+1],
+                                                          np.append(search_points[new_col[i+1]], -1)
                     )
                     
             else:

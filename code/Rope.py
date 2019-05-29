@@ -16,12 +16,12 @@ class Rope:
         lace {np.array} -- location of all the nodes in 3-D space
         DISTANCE_BETWEEN_NODES {int} -- Distance between nodes in pixels
     """
-    NO_NODES = 15
+    NO_NODES = 10
     # added comment
     # lace is shape (x,y,z)
     lace = np.zeros((NO_NODES, 3))
     new = []
-    DISTANCE_BETWEEN_NODES = 10
+    DISTANCE_BETWEEN_NODES = 5
 
     def __init__(self):
         """Rope object to store actual data nd physics model of the shoelace
