@@ -16,12 +16,12 @@ class Rope:
         lace {np.array} -- location of all the nodes in 3-D space
         DISTANCE_BETWEEN_NODES {int} -- Distance between nodes in pixels
     """
-    NO_NODES = 50
+    NO_NODES = 10
     # added comment
     # lace is shape (x,y,z)
     lace = np.zeros((NO_NODES, 3))
     new = []
-    DISTANCE_BETWEEN_NODES = 10
+    DISTANCE_BETWEEN_NODES = 5
 
     def __init__(self):
         """Rope object to store actual data nd physics model of the shoelace
@@ -63,7 +63,7 @@ class Rope:
                 frame,
                 (int(self.lace[i][0]), int(self.lace[i][1])),
                 (int(self.lace[i+1][0]), int(self.lace[i+1][1])),
-                (255, 255, 0),
+                (0, 255, 0),
                 5
                 )
         return frame
@@ -174,12 +174,10 @@ class Rope:
                                     position_two=None
                                     ):
         log.debug("node1: %s, Node2: %s", node, second)
-        originalNode = node
-        second_orig = second
-        if node == 0:
-            begining = False
         if begining:
             log.debug("Node : %s, position: %s", node, position)
+            originalNode = node
+            second_orig = second
             self.lace[node] = position
             self.lace[second] = position_two
             while node > 0:
@@ -211,10 +209,10 @@ class Rope:
             tmp_after_2 = self.lace[originalNode:second_orig]
             averaged = np.average(list(zip(tmp_after_1, tmp_after_2)), axis=1)
             self.lace[originalNode:second_orig] = averaged
-        if end:
+        elif end:
             log.debug("Node : %s, position: %s", node, position)
-            node = originalNode
-            second = second_orig
+            originalNode = node
+            second_orig = second
             self.lace[node] = position
             self.lace[second] = position_two
             while second < len(self.lace)-1:
@@ -248,36 +246,30 @@ class Rope:
             log.debug("list: \n %s", list_vals)
             averaged = np.average(list_vals, axis=1)
             self.lace[originalNode:second_orig] = averaged
-        if not (begining and end):
+        else:
             log.debug("Node : %s, position: %s", node, position)
-            node = originalNode
-            second = second_orig
-            log.info("Node: %s, Second: %s", node, second)
-            # log.info(second)
+            originalNode = node
+            second_orig = second
             self.lace[node] = position
             self.lace[second] = position_two
-            if second- node >1:
-                tmp_original = self.lace[originalNode+1:second_orig]
-                log.info(len(tmp_original))
-                while second > node:
-                    currentNode = second - 1
-                    self.lace[currentNode] = self.follow_the_leader_simple(
-                        self.lace[currentNode],
-                        self.lace[second]
-                    )
-                    second = currentNode
-                tmp_after_1 = self.lace[originalNode+1:second_orig]
-                self.lace[originalNode+1:second_orig] = tmp_original
-                node = originalNode
-                while node < second_orig:
-                    currentNode = node+1
-                    self.lace[currentNode] = self.follow_the_leader_simple(
-                        self.lace[currentNode],
-                        self.lace[node]
-                    )
-                    node = currentNode
-                tmp_after_2 = self.lace[originalNode+1:second_orig]
-                # log.info(tmp_after_1)
-                # log.info(tmp_after_2)
-                averaged = np.average(list(zip(tmp_after_1, tmp_after_2)), axis=1)
-                self.lace[originalNode+1:second_orig] = averaged
+            tmp_original = self.lace[originalNode:second_orig]
+            while second > node:
+                currentNode = second - 1
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode],
+                    self.lace[second]
+                )
+                second = currentNode
+            tmp_after_1 = self.lace[originalNode:second_orig]
+            self.lace[originalNode:second_orig] = tmp_original
+            node = originalNode
+            while node < second_orig:
+                currentNode = node+1
+                self.lace[currentNode] = self.follow_the_leader_simple(
+                    self.lace[currentNode],
+                    self.lace[node]
+                )
+                node = currentNode
+            tmp_after_2 = self.lace[originalNode:second_orig]
+            averaged = np.average(list(zip(tmp_after_1, tmp_after_2)), axis=1)
+            self.lace[originalNode:second_orig] = averaged

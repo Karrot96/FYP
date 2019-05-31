@@ -8,8 +8,7 @@ import logging as log
 import numpy as np
 import cv2
 import rope
-from Engines.full_combined import Engine
-import time
+from Engines.full_combined import Enginebgt
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -47,9 +46,8 @@ class Video:
                       frame_no,
                       frame.shape
             )
-            # cv2.imshow('frame', frame)
-            lower_yellow = np.array([0, 0, 150])
-            upper_yellow = np.array([80, 150,255])
+            lower_yellow = np.array([220, 220, 220])
+            upper_yellow = np.array([255, 255, 255])
             mask = cv2.inRange(frame, lower_yellow, upper_yellow)
             edges = cv2.Canny(mask, 50, 60)
             # log.debug("Frame :%s, Edges \n: %s", frame_no, edges)
@@ -59,7 +57,7 @@ class Video:
             log.info("Engine Finished")
             frame = self.rope.draw_lace(frame)
             # cv2.imshow('edges', mask)
-            cv2.imshow('frame', frame)
+            # cv2.imshow('frame', frame)
             if self.out:
                 self.out.write(frame)
                 log.info("Writing Frame")

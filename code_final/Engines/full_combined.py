@@ -7,8 +7,8 @@ from scipy import spatial
 from scipy.optimize import linear_sum_assignment
 np.set_printoptions(threshold=sys.maxsize)
 
-MOVE_THRESH_LOWER = -1
-MOVE_THRESH_UPPER = 200
+MOVE_THRESH_LOWER = 0
+MOVE_THRESH_UPPER = 225
 
 
 class ShortestPath:
@@ -211,8 +211,6 @@ class Engine:
 
         tree = spatial.cKDTree(plot)
         distance, indexes1 = tree.query(points, k=[k])
-        # log.info(plot)
-        # log.info(tree.data)
         # log.info(distance)
         # log.info(indexes1)
         return indexes1, distance
@@ -256,7 +254,7 @@ class Engine:
             nodes = []
             # TODO Hungarian could be used to perform matching
             # Good but not perfect - better way of ignoring erronous points would be beneficial
-            hungarian = False
+            hungarian = True
             if hungarian:
                 for i in self.rope.lace:
                     j = np.delete(i,2)
@@ -291,15 +289,12 @@ class Engine:
                     )
                     
             else:
-                log.info(self.rope.lace)
-                log.info("Search Points: \n %s", search_points)
                 for i in search_points:
                     search_space = np.array(self.rope.lace)
                     position, distanace = self.nearestneighbours(search_space[:, :2], i, 1)
-                    if distanace < MOVE_THRESH_UPPER:
-                        nodes.append([position, distanace, np.append(i, -1)])
+                    if distanace > MOVE_THRESH:
+                        nodes.append([position, np.append(i, -1)])
                 nodes = np.array(nodes)
-                log.info(nodes)
                 log.debug(nodes)
                 sorted_nodes = nodes[nodes[:,0].argsort()]
                 length = len(sorted_nodes)-1
@@ -308,24 +303,22 @@ class Engine:
                     log.debug(i)
                     log.debug(sorted_nodes[i][0])
                     if sorted_nodes[i][0][0] == sorted_nodes[i-1][0][0]:
-                        if sorted_nodes[i][1][0] > sorted_nodes[i-1][1][0]:
-                            sorted_nodes[i-1] = sorted_nodes[i]
                         log.debug(i)
                         sorted_nodes = np.delete(sorted_nodes, (i), axis=0)
-                log.info("Sorted_nodes: \n %s", sorted_nodes)
+                log.debug("Sorted_nodes: \n %s", sorted_nodes)
                 for i in range(len(sorted_nodes)-1):
                     begining = False
                     end = False
                     if i == 0:
                         begining = True
-                    if i == len(sorted_nodes)-2:
+                    if i == len(nodes)-2:
                         end = True
                     self.rope.implement_follow_the_leader(sorted_nodes[i][0][0],
-                                                        sorted_nodes[i][2],
+                                                        sorted_nodes[i][1],
                                                         begining,
                                                         end,
                                                         sorted_nodes[i+1][0][0],
-                                                        sorted_nodes[i+1][2]
+                                                        sorted_nodes[i+1][1]
                     )
             log.debug("Lace: \n %s", self.rope.lace)
         return self.rope
