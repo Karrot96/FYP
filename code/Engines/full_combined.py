@@ -8,7 +8,7 @@ from scipy.optimize import linear_sum_assignment
 np.set_printoptions(threshold=sys.maxsize)
 
 MOVE_THRESH_LOWER = -1
-MOVE_THRESH_UPPER = 200
+MOVE_THRESH_UPPER = 100
 
 
 class ShortestPath:
@@ -289,17 +289,15 @@ class Engine:
                                                           new_row[i+1],
                                                           np.append(search_points[new_col[i+1]], -1)
                     )
-                    
             else:
-                log.info(self.rope.lace)
-                log.info("Search Points: \n %s", search_points)
+                log.debug(self.rope.lace)
+                log.debug("Search Points: \n %s", search_points)
                 for i in search_points:
                     search_space = np.array(self.rope.lace)
                     position, distanace = self.nearestneighbours(search_space[:, :2], i, 1)
                     if distanace < MOVE_THRESH_UPPER:
                         nodes.append([position, distanace, np.append(i, -1)])
                 nodes = np.array(nodes)
-                log.info(nodes)
                 log.debug(nodes)
                 sorted_nodes = nodes[nodes[:,0].argsort()]
                 length = len(sorted_nodes)-1
@@ -312,7 +310,7 @@ class Engine:
                             sorted_nodes[i-1] = sorted_nodes[i]
                         log.debug(i)
                         sorted_nodes = np.delete(sorted_nodes, (i), axis=0)
-                log.info("Sorted_nodes: \n %s", sorted_nodes)
+                log.debug("Sorted_nodes: \n %s", sorted_nodes)
                 for i in range(len(sorted_nodes)-1):
                     begining = False
                     end = False

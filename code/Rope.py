@@ -16,12 +16,12 @@ class Rope:
         lace {np.array} -- location of all the nodes in 3-D space
         DISTANCE_BETWEEN_NODES {int} -- Distance between nodes in pixels
     """
-    NO_NODES = 50
+    NO_NODES = 25
     # added comment
     # lace is shape (x,y,z)
     lace = np.zeros((NO_NODES, 3))
     new = []
-    DISTANCE_BETWEEN_NODES = 10
+    DISTANCE_BETWEEN_NODES = 20
 
     def __init__(self):
         """Rope object to store actual data nd physics model of the shoelace
@@ -252,13 +252,13 @@ class Rope:
             log.debug("Node : %s, position: %s", node, position)
             node = originalNode
             second = second_orig
-            log.info("Node: %s, Second: %s", node, second)
+            # log.info("Node: %s, Second: %s", node, second)
             # log.info(second)
             self.lace[node] = position
             self.lace[second] = position_two
             if second- node >1:
                 tmp_original = self.lace[originalNode+1:second_orig]
-                log.info(len(tmp_original))
+                # log.info(len(tmp_original))
                 while second > node:
                     currentNode = second - 1
                     self.lace[currentNode] = self.follow_the_leader_simple(
