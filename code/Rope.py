@@ -97,9 +97,10 @@ class Rope:
                     # Forced to int as pixels cannot be partial
                     move_value = int(
                         math.sqrt(
-                            self.DISTANCE_BETWEEN_NODES/(1 + y_vector**2)
+                            (self.DISTANCE_BETWEEN_NODES**2)/(1 + y_vector**2)
                         )
                     )
+                    #TODO : This is wrong
                     self.new.append(
                         [
                             x_sorted[i] + move_value * x_vector * j,
