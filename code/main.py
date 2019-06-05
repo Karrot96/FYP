@@ -34,7 +34,6 @@ def from_video(cap, out=None):
         start = time.perf_counter()
         log.info("frame: %s", frame)
         ret = vid.shoelace_finding(frame)
-        log.info(ret)
         if ret == 0:
             exit()
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -56,6 +55,15 @@ def from_camera(cap, out=None):
     Keyword Arguments:
         out {string} -- An output video file location (default: {None})
     """
+    log.debug("resolution: %s", (int(cap.get(3)), int(cap.get(4))))
+    if out:
+        out = cv2.VideoWriter(
+            out,
+            cv2.VideoWriter_fourcc('D', 'I', 'V', 'X'),
+            10,
+            (int(cap.get(3)), int(cap.get(4)))
+            )
+
     vid = video.Video(cap, out)
     frame = 0
     while True:
@@ -146,7 +154,7 @@ def video_input():
         log.info("Using %s as video", args.video)
         from_video(cv2.VideoCapture(args.video))
     else:
-        log.info("Selecting Camera 0")
+        log.warning("No webcam Selected. Selecting Camera 0")
         from_camera(cv2.VideoCapture(0))
 
 

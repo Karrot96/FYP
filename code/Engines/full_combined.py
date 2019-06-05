@@ -1,4 +1,6 @@
 import sys
+import time
+import cv2
 import logging as log
 import numpy as np
 import rope
@@ -164,7 +166,10 @@ class Points:
         return out  # Return the midpoints of each point
 
     def connected_dots(self, edges):
+        start = time.perf_counter()
         self.lace = np.apply_along_axis(self.get_points, 0, edges)
+        end = time.perf_counter()
+        log.info("numpy Function time: %s", end-start)
         shoelace = np.nonzero(self.lace)  # Remove padded 0's
         combined_y = np.apply_along_axis(
             self.locate_y,
@@ -256,7 +261,7 @@ class Engine:
             nodes = []
             # TODO Hungarian could be used to perform matching
             # Good but not perfect - better way of ignoring erronous points would be beneficial
-            hungarian = False
+            hungarian = True
             if hungarian:
                 for i in self.rope.lace:
                     j = np.delete(i,2)

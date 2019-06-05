@@ -38,14 +38,13 @@ class Rope:
         Returns:
             np.array -- returns the new image
         """
-
-        for i in range(0, self.NO_NODES-1):
+        for i in range(0, len(self.lace)-1):
             cv2.circle(
                 frame,
                 (int(self.lace[i][0]), int(self.lace[i][1])),
                 2,
-                (0, 255, 0),
-                5
+                (255, 255, 255),
+                4
                 )
         return frame
 
@@ -162,7 +161,6 @@ class Rope:
         movementVector = newVector / divisor
         move = move+movementVector
         return self.follow_the_leader(move, movementVector, node)
-
 
     # This should be done recursively would be more efficient
     def implement_follow_the_leader(self,
