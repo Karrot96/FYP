@@ -169,7 +169,7 @@ class Points:
         start = time.perf_counter()
         self.lace = np.apply_along_axis(self.get_points, 0, edges)
         end = time.perf_counter()
-        log.info("numpy Function time: %s", end-start)
+        # log.info("numpy Function time: %s", end-start)
         shoelace = np.nonzero(self.lace)  # Remove padded 0's
         combined_y = np.apply_along_axis(
             self.locate_y,
@@ -261,7 +261,7 @@ class Engine:
             nodes = []
             # TODO Hungarian could be used to perform matching
             # Good but not perfect - better way of ignoring erronous points would be beneficial
-            hungarian = True
+            hungarian = False
             if hungarian:
                 for i in self.rope.lace:
                     j = np.delete(i,2)

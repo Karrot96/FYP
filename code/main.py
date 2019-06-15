@@ -7,6 +7,8 @@ import sys
 import numpy as np
 import cv2
 import video
+import matplotlib.pyplot as plt
+import winsound
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -19,6 +21,7 @@ def from_video(cap, out=None):
     Keyword Arguments:
         out {[type]} -- [description] (default: {None})
     """
+    times = []
     frame = 0
     log.debug("resolution: %s", (int(cap.get(3)), int(cap.get(4))))
     if out:
@@ -35,7 +38,7 @@ def from_video(cap, out=None):
         log.info("frame: %s", frame)
         ret = vid.shoelace_finding(frame)
         if ret == 0:
-            exit()
+            break
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         frame += 1
@@ -43,8 +46,19 @@ def from_video(cap, out=None):
         log.info("Current Total time is %s resulting in frame rate of %s",
                  end-start, 1/(end-start)
                  )
+        times.append(end-start)
+    fig = plt.figure()
+    plt.hist(times, bins=25,normed=True)
+    plt.title("Test 1 time per a frame histogram")
+    plt.ylabel("Probability(%)")
+    plt.xlabel("Time per frame(s)")
+    fig.savefig('Test1.png')
     cap.release()
     cv2.destroyAllWindows()
+    frequency = 2500  # Set Frequency To 2500 Hertz
+    duration = 250  # Set Duration To 1000 ms == 1 second
+    winsound.Beep(frequency, duration)
+    exit()
 
 
 def from_camera(cap, out=None):

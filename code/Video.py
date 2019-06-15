@@ -8,7 +8,7 @@ import logging as log
 import numpy as np
 import cv2
 import rope
-from Engines.full_combined import Engine
+from Engines.kmeans_connect_dots import Engine
 import time
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -52,15 +52,16 @@ class Video:
             lower_yellow = np.array([0, 0, 150])
             upper_yellow = np.array([50, 150,255])
             mask = cv2.inRange(frame, lower_yellow, upper_yellow)
-            # cv2.imshow("mask2", mask)
+            cv2.imwrite("mask2.png", mask)
+            exit()
             # mask = cv2.UMat(mask)
             start = time.perf_counter()
             # mask_no_noise = cv2.fastNlMeansDenoising(mask, None, 20, 25, 25)
-            # mask_no_noise = cv2.fastNlMeansDenoising(mask_no_noise, None, 20, 25, 25)
+            # mask = cv2.fastNlMeansDenoising(mask_no_noise, None, 20, 25, 25)
             # cv2.imshow("mask", mask)
             edges = cv2.Canny(mask, 50, 60)
             end = time.perf_counter()
-            log.info("CompVis: %s", end-start)
+            # log.info("CompVis: %s", end-start)
             # log.debug("Frame :%s, Edges \n: %s", frame_no, edges)
             # Engines
             log.info("Starting Engine Run")
