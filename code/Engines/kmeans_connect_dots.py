@@ -1,7 +1,4 @@
-"""[summary]
-
-Returns:
-    [type] -- [description]
+"""Detection based algorithm
 """
 import sys
 import logging as log
@@ -20,6 +17,8 @@ class Engine:
     MOVECONST = 20
 
     def __init__(self):
+        """Engine class for image processing - Kmeans version
+        """
         self.rope = rope.Rope()
         self.lace = None
 
