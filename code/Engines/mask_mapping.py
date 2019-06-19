@@ -5,44 +5,65 @@ import sys
 import math
 import logging as log
 import numpy as np
-import rope
+import models.rope
 from sklearn.cluster import MiniBatchKMeans
 from scipy import spatial
 import joblib
-from Engines.path_finding import Paths
 np.set_printoptions(threshold=sys.maxsize)
 
 
 class Path:
+    """Used to connect points in a path
+    Arguments:
+        points {np.array} -- (y,x)
+        mask {np.array} -- mask image
     """
-    """
-
     def __init__(self, points, mask):
-        """[summary]
+        """Used to connect points in a path
         Arguments:
-            points {[type]} -- (y,x)
-            mask {[type]} -- [description]
+            points {np.array} -- (y,x)
+            mask {np.array} -- mask image
         """
         self.MASK_WEIGHT = 40
         self.points = points
         self.mask = mask
 
     def flip_x(self, x1, x2, mask):
+        """Swap two points in x direction
+        
+        Arguments:
+            x1 {int} -- x1 value
+            x2 {int} -- x2 value
+            mask {np.array} -- mask image
+        
+        Returns:
+            np.array -- mask image
+        """
         if x1 > x2:
             return np.flip(mask, axis=1)
         return mask
 
     def flip_y(self, y1, y2, mask):
+        """Swap two points in y direction
+        
+        Arguments:
+            y1 {int} -- y1 value
+            y2 {int} -- y2 value
+            mask {np.array} -- mask image
+        
+        Returns:
+            np.array -- mask image
+        """
         if y1 > y2:
             return np.flip(mask, axis=0)
         return mask
 
     def mask_distance(self, p1, p2, mask):
-        """[summary]
+        """get adjusted distance from mask  
 
         Arguments:
-            p1 {[type]} -- [description]
-            p2 {[type]} -- [description]
+            p1 {np.array} -- points 1 in (y,x)
+            p2 {np.array} -- points 2 in (y,x)
         """
         x_diff = abs(p1[1]-p2[1])
         y_diff = abs(p1[0]-p2[0])
@@ -77,6 +98,16 @@ class Path:
         return total
     
     def algorithm_loop(self, start, new, search_space):
+        """Loops over the distance algorithm
+        
+        Arguments:
+            start {np.array} -- start node location
+            new {np.array} -- output path
+            search_space {np.array} -- points left to search
+        
+        Returns:
+            np.array -- shortest path
+        """
         log.debug("new: \n %s", new)
         if search_space.any():
             log.debug("Start: %s", start)
@@ -115,12 +146,36 @@ class Path:
             return [np.sum(new[:, 1]), new]
 
     def algorithm(self, start):
+        """legacy connection
+        
+        Arguments:
+            start {np.array} -- start node location
+        
+        Returns:
+            np.array -- the output path
+        """
         return self.algorithm_loop(start, np.array([[start, 0]]), np.copy(self.points))
 
     def get_value(self, arr):
+        """get first value of array
+        
+        Arguments:
+            arr {np.array} -- an array
+        
+        Returns:
+            np.array -- first element of array
+        """
         return arr[0]
 
     def iterate(self, rope_loc):
+        """iterate through all starting nodes
+        
+        Arguments:
+            rope_loc {np.array} -- locations of the points on the shoelace
+        
+        Returns:
+            np.array -- shortest rope path
+        """
         if rope_loc is not None:
             return self.iterate_new(rope_loc)
         # possibile_paths = [None for _ in range(len(self.points))]
@@ -156,6 +211,14 @@ class Path:
         return (x_values, y_values)
 
     def iterate_new(self, rope_loc):
+        """iterate through all starting nodes
+        
+        Arguments:
+            rope_loc {np.array} -- locations of the points on the shoelace
+        
+        Returns:
+            np.array -- shortest rope path
+        """
         log.info("Getting previous starting value")
         rope_xy = [rope_loc[0][0], rope_loc[0][1]]
         log.debug("xy: %s", rope_xy)
@@ -190,10 +253,12 @@ class Path:
 
 
 class Engine:
-    """[summary]
+    """Engine for mask_mapping
     """
 
     def __init__(self):
+        """Engine for mask_mapping
+        """
         self.rope = rope.Rope()
         self.first = True
         self.lace = None
