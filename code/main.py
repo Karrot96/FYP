@@ -1,4 +1,4 @@
-"""[summary]
+"""Main file of the project for calling all other elements
 """
 import argparse
 import logging as log
@@ -11,13 +11,13 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 def from_video(cap, out=None):
-    """[summary]
+    """Read data from a video file
 
     Arguments:
-        cap {[type]} -- [description]
+        cap {cv2.VideoCapture} -- The video capture from CV2
 
     Keyword Arguments:
-        out {[type]} -- [description] (default: {None})
+        out {string} -- The output location if recording (default: {None})
     """
     frame = 0
     log.debug("resolution: %s", (int(cap.get(3)), int(cap.get(4))))
@@ -151,7 +151,7 @@ def video_input():
 
 
 def main():
-    """[summary]
+    """The main function calling the rest of the program
     """
     video_input()
 
