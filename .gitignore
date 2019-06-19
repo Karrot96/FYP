@@ -1,5 +1,7 @@
 *.log
 videos/
 .vscode
-*json
+*.json
 Testing/
+Outputs/
+*.png

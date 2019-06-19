@@ -9,10 +9,113 @@ import numpy as np
 import rope
 from scipy import spatial
 from sklearn.cluster import KMeans
-from Engines.path_finding import Paths
 np.set_printoptions(threshold=sys.maxsize)
 
- 
+
+class Paths:
+    """Used to hande the finding of the shortest path to connectg a set of
+    points - definitely not efficient
+
+        Variabels:
+            points {2-D numpy array} - list of points to be connected
+    """
+    total_distance = -1
+    best = None
+
+    def __init__(self, points):
+        """Used to hande the finding of the shortest path to connectg a
+        set of points - definitely not efficient
+
+        Variabels:
+            points {2-D numpy array} - list of points to be connected
+        """
+        self.points = points
+        log.debug("Points in path: \n %s", self.points)
+
+    # ! work out wasted processing
+    def reorder(self, points_remaining, start, new, first):
+        """ Reorders the array to that of the shortest distanace between
+        points given a certain starting point
+
+        Arguments:
+            points_remaining {2-D array} -- Array of the points yet to be
+                                         sorted
+            start {1-D array of shape (2)} -- Starting point for the sort
+            new {None} -- Used in the recursion
+            first {Bool} -- Used to determine if on first level of recursion
+
+        Returns:
+            int -- always 0
+        """
+
+        if first:
+            distances = np.linalg.norm(points_remaining-start, axis=1)
+            index = np.argmin(distances)
+            new = np.array([[points_remaining[index], distances[index]]])
+            self.reorder(
+                np.delete(points_remaining, index, 0),
+                points_remaining[index],
+                new,
+                False
+            )
+        elif len(points_remaining) > 1:
+            distances = np.linalg.norm(points_remaining-start, axis=1)
+            index = np.argmin(distances)
+            new = np.append(
+                new,
+                [[
+                    points_remaining[index],
+                    distances[index]
+                ]],
+                axis=0
+            )
+            self.reorder(
+                np.delete(points_remaining, index, 0),
+                points_remaining[index],
+                new,
+                False
+            )
+        else:
+            new = np.append(
+                new,
+                [[
+                    points_remaining[0],
+                    np.linalg.norm(points_remaining-start)
+                ]],
+                axis=0
+            )
+            if self.total_distance > 0:
+                values = new[:, 1]
+                dist = np.sum(values)
+                if dist < self.total_distance:
+                    self.total_distance = dist
+                    self.best = np.delete(new, 1, 1)
+            else:
+                values = new[:, 1]
+                self.best = np.delete(new, 1, 1)
+                self.total_distance = np.sum(values)
+        return 0
+
+    def iterate(self):
+        """Used to interate through all possible lists to find shortest distance
+
+            Returns:
+                {(list[float],list[float])} - (x,y) points
+        """
+
+        for point in self.points:
+            self.reorder(self.points, point, None, True)
+        x_value = []
+        y_value = []
+        log.debug("Path points: \n %s", self.points)
+        # TODO This should be able to be done using np.apply_along_axis for
+        # speed up
+        for best in self.best:
+            x_value.append(best[0][0])
+            y_value.append(best[0][1])
+        return (x_value, y_value)
+
+
 class Engine:
     """Engine class for image processing - Kmeans version
     """
