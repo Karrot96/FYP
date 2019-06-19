@@ -69,6 +69,15 @@ class Rope:
         return frame
 
     def find_lace(self, x_sorted, y_sorted):
+        """ Create a lace along a given path
+        
+        Arguments:
+            x_sorted {np.array} -- locations of the x values
+            y_sorted {np.array} -- locations of the y values
+        
+        Raises:
+            Exception: If input arrays are not of same length
+        """
         if not len(x_sorted) == len(y_sorted):
             raise Exception("%s: Should be an equal number of x and y values",
                             __name__
@@ -137,15 +146,24 @@ class Rope:
         self.lace = np.array(self.new)
         # log.debug(self.lace)
 
-    def follow_the_leader(self, move, movementVector, node):
+    def follow_the_leader(self, move, movement_vector, node):
+        """Implements the follow the leader loop
+        
+        Arguments:
+            move {np.array} -- Location of the node to move
+            movement_vector {np.array} -- Vector along which to move node
+            node {np.array} -- location of node movement is towards
+        
+        Returns:
+            np.array -- new location of the moved node
+        """
         x = math.sqrt(
             (move[0] - node[0])**2
             + (move[1] - node[1])**2
             + (move[2] - node[2])**2
         )
-        # print(x)
         while x > self.DISTANCE_BETWEEN_NODES:
-            move = move+movementVector
+            move = move+movement_vector
             x = math.sqrt(
                 (move[0] - node[0])**2
                 + (move[1] - node[1])**2
@@ -154,14 +172,23 @@ class Rope:
         return move
 
     def follow_the_leader_simple(self, move, node):
+        """Handles the set up of the follow the leader
+        
+        Arguments:
+            move {np.array} -- location of node to move
+            node {np.array} -- location of previous node that was moved
+        
+        Returns:
+            {np.array} -- new location of the move node
+        """
         log.debug(move)
         log.debug(node)
-        newVector = node - move
-        # log.debug(newVector)
-        divisor = np.absolute(newVector[np.argmax(np.absolute(newVector))])
-        movementVector = newVector / divisor
-        move = move+movementVector
-        return self.follow_the_leader(move, movementVector, node)
+        new_vector = node - move
+        log.debug("new_vector:%s", new_vector)
+        divisor = np.absolute(new_vector[np.argmax(np.absolute(new_vector))])
+        movement_vector = new_vector / divisor
+        move = move + movement_vector
+        return self.follow_the_leader(move, movement_vector, node)
 
 
     # This should be done recursively would be more efficient
@@ -173,7 +200,20 @@ class Rope:
                                     second=None,
                                     position_two=None
                                     ):
+        """Used to handle the FTL method
+        
+        Arguments:
+            node {int} -- current node number  
+            position {np.array} -- location to move node to
+            begining {bool} -- first node being moved
+            end {bool} -- last node being moved
+        
+        Keyword Arguments:
+            second {int} -- number of the second node (default: {None})
+            position_two {np.array} -- location of the second node (default: {None})
+        """
         log.debug("node1: %s, Node2: %s", node, second)
+        # Used to handle the different states of the FTL alogirthm
         if begining:
             log.debug("Node : %s, position: %s", node, position)
             originalNode = node
