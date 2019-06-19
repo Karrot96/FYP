@@ -1,3 +1,6 @@
+"""A module combining a first frame detection algorithm
+with a least energy movement algorithm
+"""
 import sys
 import logging as log
 import numpy as np
@@ -12,8 +15,18 @@ MOVE_THRESH_UPPER = 100
 
 
 class ShortestPath:
+    """Used to find the shortest path
+        
+    Arguments:
+        points {np.array} -- list of the points to connect
+    """
 
     def __init__(self, points):
+        """Used to find the shortest path
+        
+        Arguments:
+            points {np.array} -- list of the points to connect
+        """
         self.points = points
         self.total_distance = -1
         self.best = None
@@ -108,8 +121,12 @@ class ShortestPath:
 
 
 class Points:
+    """Initialise the points and shoelace
+    """
 
     def __init__(self):
+        """Initialise the points and shoelace
+        """
         self.points = None
         self.lace = None
 
@@ -164,6 +181,11 @@ class Points:
         return out  # Return the midpoints of each point
 
     def connected_dots(self, edges):
+        """ Used to connect the dots in optimal way
+        
+        Arguments:
+            edges {np.array} -- Edges image
+        """
         self.lace = np.apply_along_axis(self.get_points, 0, edges)
         shoelace = np.nonzero(self.lace)  # Remove padded 0's
         combined_y = np.apply_along_axis(
@@ -185,6 +207,12 @@ class Points:
 
 
 class Engine:
+    """Initialisation of the engine
+        first is used for finding the most likely positioning of the rope on
+        the first run through.
+        A different more exhaustive and slower approach is taken for this
+        search
+        """
 
     def __init__(self):
         """Initialisation of the engine
@@ -237,6 +265,14 @@ class Engine:
         return locations
 
     def run(self, edges):
+        """Used to run the combined engine
+        
+        Arguments:
+            edges {np.array} -- image of the edges
+        
+        Returns:
+            rope -- full rope class object
+        """
         points = Points()
         # Method
         # TODO write and test more methods into class Points
