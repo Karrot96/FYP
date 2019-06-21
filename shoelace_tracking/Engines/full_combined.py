@@ -186,8 +186,10 @@ class Points:
         Arguments:
             edges {np.array} -- Edges image
         """
+        log.info(np.count_nonzero(edges))
         self.lace = np.apply_along_axis(self.get_points, 0, edges)
         shoelace = np.nonzero(self.lace)  # Remove padded 0's
+        log.info(np.shape(shoelace))
         combined_y = np.apply_along_axis(
             self.locate_y,
             1,

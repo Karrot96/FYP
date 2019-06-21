@@ -45,9 +45,8 @@ class Video:
         # Although this is not perfect
         try:
             ret, frame = self.cap.read()
-            log.info(frame)
             width = frame.shape[0]
-            log.debug("Frame :%s, width: %s", frame_no, width)
+            log.info("Frame :%s, width: %s", frame_no, width)
             log.debug(
                 "Frame :%s, image resolution is: %s",
                 frame_no,
@@ -55,8 +54,8 @@ class Video:
                 )
             
             # Masking of the image
-            mask_lower = np.array([220, 220, 220])
-            mask_upper = np.array([255, 255, 255])
+            mask_lower = np.array([0, 0, 150])
+            mask_upper = np.array([50, 150, 255])
             mask = cv2.inRange(frame, mask_lower, mask_upper)
             edges = cv2.Canny(mask, 50, 60)
             log.debug("Frame :%s, Edges \n: %s", frame_no, edges)
