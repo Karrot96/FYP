@@ -4,7 +4,7 @@ with a least energy movement algorithm
 import sys
 import logging as log
 import numpy as np
-import models.rope
+import rope
 from sklearn.cluster import KMeans
 from scipy import spatial
 from scipy.optimize import linear_sum_assignment

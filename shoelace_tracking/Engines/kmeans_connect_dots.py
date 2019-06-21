@@ -3,7 +3,7 @@
 import sys
 import logging as log
 import numpy as np
-import models.rope
+import rope
 from scipy import spatial
 from sklearn.cluster import KMeans
 np.set_printoptions(threshold=sys.maxsize)

@@ -5,7 +5,7 @@ import sys
 import math
 import logging as log
 import numpy as np
-import models.rope
+import rope
 from sklearn.cluster import MiniBatchKMeans
 from scipy import spatial
 import joblib

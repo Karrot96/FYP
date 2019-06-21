@@ -5,8 +5,8 @@ import sys
 import logging as log
 import numpy as np
 import cv2
-import models.rope
-from Engines.mask_mapping import Engine
+import rope
+from Engines.full_combined import Engine
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -45,6 +45,7 @@ class Video:
         # Although this is not perfect
         try:
             ret, frame = self.cap.read()
+            log.info(frame)
             width = frame.shape[0]
             log.debug("Frame :%s, width: %s", frame_no, width)
             log.debug(
@@ -64,7 +65,7 @@ class Video:
             log.info("Starting Engine Run")
             self.rope = self.engine.run(mask)
             log.info("Engine Finished")
-            frame = self.rope.draw_lace(frame)
+            frame = self.rope.draw_point(frame)
 
             if self.out:
                 self.out.write(frame)
